@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Trophy, Medal, Award, Zap } from "lucide-react";
-import { createPageUrl } from "./utils";
+import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
 
 export default function Leaderboard() {

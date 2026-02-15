@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Trophy, Target } from "lucide-react";
-import { createPageUrl } from "./utils";
+import { createPageUrl } from "../utils";
 import XPCard from "../components/dashboard/XPCard";
 import ProgressOverview from "../components/dashboard/ProgressOverview";
 import ActivityCard from "../components/dashboard/ActivityCard";
