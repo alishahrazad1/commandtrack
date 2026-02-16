@@ -3,9 +3,9 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Filter } from "lucide-react";
 
-export default function FilterPanel({ filters, onFilterChange, users }) {
-  const departments = [...new Set(users.map(u => u.department).filter(Boolean))];
-  const teams = [...new Set(users.map(u => u.team).filter(Boolean))];
+export default function FilterPanel({ filters, onFilterChange, users, departments = [], teams = [] }) {
+  const deptNames = departments.map(d => d.name);
+  const teamNames = teams.map(t => t.name);
 
   return (
     <Card className="bg-slate-900 border-slate-700 p-4">

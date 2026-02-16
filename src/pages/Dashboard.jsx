@@ -97,6 +97,14 @@ export default function Dashboard() {
                 </Button>
               </Link>
             )}
+            {(user.role === 'team_lead' || user.role === 'department_head') && (
+              <Link to={createPageUrl('TeamLeadDashboard')}>
+                <Button className="bg-purple-500 hover:bg-purple-600">
+                  <Target className="w-4 h-4 mr-2" />
+                  Team Dashboard
+                </Button>
+              </Link>
+            )}
             <Link to={createPageUrl('Leaderboard')}>
               <Button className="bg-orange-500 hover:bg-orange-600">
                 <Trophy className="w-4 h-4 mr-2" />

@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
-import { Users, Target, TrendingUp, Settings, BarChart3, Download, Eye, Edit2, Check, X } from "lucide-react";
+import { Users, Target, TrendingUp, Settings, BarChart3, Download, Eye, Edit2, Check, X, Building2 } from "lucide-react";
 import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
 import FilterPanel from "../components/admin/FilterPanel";
 import ActivityPerformance from "../components/admin/ActivityPerformance";
 import TrendsChart from "../components/admin/TrendsChart";
 import EmployeeReport from "../components/admin/EmployeeReport";
+import ComparisonReport from "../components/admin/ComparisonReport";
 
 export default function AdminDashboard() {
   const [user, setUser] = useState(null);
@@ -47,6 +48,16 @@ export default function AdminDashboard() {
     queryFn: () => base44.entities.ActivityCompletion.list(),
   });
 
+  const { data: departments = [] } = useQuery({
+    queryKey: ['departments'],
+    queryFn: () => base44.entities.Department.list(),
+  });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+  });
+
   const updateUserMutation = useMutation({
     mutationFn: async ({ userId, data }) => {
       await base44.entities.User.update(userId, data);
@@ -59,7 +70,7 @@ export default function AdminDashboard() {
 
   const handleEditUser = (u) => {
     setEditingUser(u.id);
-    setEditValues({ department: u.department || '', team: u.team || '' });
+    setEditValues({ department_id: u.department_id || '', team_id: u.team_id || '' });
   };
 
   const handleSaveUser = (userId) => {
@@ -68,15 +79,21 @@ export default function AdminDashboard() {
 
   const handleCancelEdit = () => {
     setEditingUser(null);
-    setEditValues({ department: '', team: '' });
+    setEditValues({ department_id: '', team_id: '' });
   };
 
   if (!user || user.role !== 'admin') return null;
 
   // Apply filters
   const filteredUsers = users.filter(u => {
-    if (filters.department !== 'all' && u.department !== filters.department) return false;
-    if (filters.team !== 'all' && u.team !== filters.team) return false;
+    if (filters.department !== 'all') {
+      const dept = departments.find(d => d.name === filters.department);
+      if (dept && u.department_id !== dept.id) return false;
+    }
+    if (filters.team !== 'all') {
+      const team = teams.find(t => t.name === filters.team);
+      if (team && u.team_id !== team.id) return false;
+    }
     return true;
   });
 
@@ -102,11 +119,14 @@ export default function AdminDashboard() {
       const userScores = userCompletions.filter(c => c.score).map(c => c.score);
       const avgUserScore = userScores.length > 0 ? Math.round(userScores.reduce((sum, s) => sum + s, 0) / userScores.length) : 'N/A';
 
+      const userDept = departments.find(d => d.id === u.department_id);
+      const userTeam = teams.find(t => t.id === u.team_id);
+
       return {
         Name: u.full_name,
         Email: u.email,
-        Department: u.department || 'N/A',
-        Team: u.team || 'N/A',
+        Department: userDept?.name || 'N/A',
+        Team: userTeam?.name || 'N/A',
         'Total XP': u.total_xp || 0,
         Level: u.level || 1,
         'Activities Completed': `${completed}/${totalActivities}`,
@@ -185,6 +205,12 @@ export default function AdminDashboard() {
               <Download className="w-4 h-4 mr-2" />
               Export Report
             </Button>
+            <Link to={createPageUrl('AdminOrganization')}>
+              <Button className="bg-orange-500 hover:bg-orange-600">
+                <Building2 className="w-4 h-4 mr-2" />
+                Organization
+              </Button>
+            </Link>
             <Link to={createPageUrl('AdminActivities')}>
               <Button className="bg-cyan-500 hover:bg-cyan-600">
                 <Settings className="w-4 h-4 mr-2" />
@@ -194,7 +220,7 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
-        <FilterPanel filters={filters} onFilterChange={setFilters} users={users} />
+        <FilterPanel filters={filters} onFilterChange={setFilters} users={users} departments={departments} teams={teams} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
@@ -251,6 +277,9 @@ export default function AdminDashboard() {
             <TabsTrigger value="employees" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
               Employee Progress
             </TabsTrigger>
+            <TabsTrigger value="comparison" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
+              Dept/Team Comparison
+            </TabsTrigger>
             <TabsTrigger value="activities" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
               Activity Performance
             </TabsTrigger>
@@ -282,24 +311,34 @@ export default function AdminDashboard() {
                           <p className="font-semibold text-white">{u.full_name}</p>
                           {editingUser === u.id ? (
                             <div className="flex gap-2 mt-1">
-                              <input
-                                type="text"
-                                value={editValues.department}
-                                onChange={(e) => setEditValues({ ...editValues, department: e.target.value })}
-                                placeholder="Department"
+                              <select
+                                value={editValues.department_id}
+                                onChange={(e) => setEditValues({ ...editValues, department_id: e.target.value })}
                                 className="px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs text-white w-32"
-                              />
-                              <input
-                                type="text"
-                                value={editValues.team}
-                                onChange={(e) => setEditValues({ ...editValues, team: e.target.value })}
-                                placeholder="Team"
+                              >
+                                <option value="">No Department</option>
+                                {departments.map(d => (
+                                  <option key={d.id} value={d.id}>{d.name}</option>
+                                ))}
+                              </select>
+                              <select
+                                value={editValues.team_id}
+                                onChange={(e) => setEditValues({ ...editValues, team_id: e.target.value })}
                                 className="px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs text-white w-32"
-                              />
+                              >
+                                <option value="">No Team</option>
+                                {teams.map(t => (
+                                  <option key={t.id} value={t.id}>{t.name}</option>
+                                ))}
+                              </select>
                             </div>
                           ) : (
                             <p className="text-sm text-slate-400">
-                              {[u.department, u.team, u.email].filter(Boolean).join(' • ')}
+                              {[
+                                departments.find(d => d.id === u.department_id)?.name,
+                                teams.find(t => t.id === u.team_id)?.name,
+                                u.email
+                              ].filter(Boolean).join(' • ')}
                             </p>
                           )}
                         </div>
@@ -352,6 +391,16 @@ export default function AdminDashboard() {
                   })}
               </div>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="comparison">
+            <ComparisonReport
+              departments={departments}
+              teams={teams}
+              users={filteredUsers}
+              completions={filteredCompletions}
+              activities={activities}
+            />
           </TabsContent>
 
           <TabsContent value="activities">
