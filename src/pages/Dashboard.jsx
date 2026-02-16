@@ -71,7 +71,7 @@ export default function Dashboard() {
       const now = new Date();
       const startDate = activity.start_date ? new Date(activity.start_date) : null;
       const endDate = activity.end_date ? new Date(activity.end_date) : null;
-      
+
       if (startDate && now < startDate) {
         throw new Error('This activity is not available yet.');
       }
@@ -79,37 +79,44 @@ export default function Dashboard() {
         throw new Error('This activity has expired.');
       }
 
-      // Allow re-completion of activities
-      await base44.entities.ActivityCompletion.create({
-        activity_id: activity.id,
-        user_email: user.email,
-        status: 'completed',
-        xp_earned: activity.xp_value,
-        completed_at: new Date().toISOString()
-      });
+      // Check if activity is already completed
+      const alreadyCompleted = completions.some(
+        c => c.activity_id === activity.id && c.user_email === user.email && c.status === 'completed'
+      );
 
-      const newTotalXP = (user.total_xp || 0) + activity.xp_value;
-      const newLevel = Math.floor(newTotalXP / 500) + 1;
-      const leveledUp = newLevel > (user.level || 1);
-      
-      await base44.auth.updateMe({
-        total_xp: newTotalXP,
-        level: newLevel
-      });
-
-      // Create notification for level up
-      if (leveledUp && user.notification_preferences?.inapp_milestones !== false) {
-        await base44.entities.Notification.create({
+      // Only award XP if not already completed
+      if (!alreadyCompleted) {
+        await base44.entities.ActivityCompletion.create({
+          activity_id: activity.id,
           user_email: user.email,
-          type: 'level_up',
-          title: '⭐ Level Up!',
-          message: `Amazing! You've reached Level ${newLevel}!`,
-          priority: 'high',
-          action_url: createPageUrl('Profile')
+          status: 'completed',
+          xp_earned: activity.xp_value,
+          completed_at: new Date().toISOString()
         });
-      }
 
-      await checkAndAwardBadges();
+        const newTotalXP = (user.total_xp || 0) + activity.xp_value;
+        const newLevel = Math.floor(newTotalXP / 500) + 1;
+        const leveledUp = newLevel > (user.level || 1);
+
+        await base44.auth.updateMe({
+          total_xp: newTotalXP,
+          level: newLevel
+        });
+
+        // Create notification for level up
+        if (leveledUp && user.notification_preferences?.inapp_milestones !== false) {
+          await base44.entities.Notification.create({
+            user_email: user.email,
+            type: 'level_up',
+            title: '⭐ Level Up!',
+            message: `Amazing! You've reached Level ${newLevel}!`,
+            priority: 'high',
+            action_url: createPageUrl('Profile')
+          });
+        }
+
+        await checkAndAwardBadges();
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['completions']);
