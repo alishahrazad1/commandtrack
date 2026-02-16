@@ -10,10 +10,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
-import { Building2, Users, Edit2, Trash2, Plus, ArrowLeft, UserPlus, X, TrendingUp, Target, Mail } from "lucide-react";
+import { Building2, Users, Edit2, Trash2, Plus, ArrowLeft, UserPlus, X, TrendingUp, Target, Mail, Upload } from "lucide-react";
 import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import BulkUploadDialog from "../components/admin/BulkUploadDialog";
 
 export default function AdminOrganization() {
   const [user, setUser] = useState(null);
@@ -502,6 +503,15 @@ export default function AdminOrganization() {
               createTeamMutation.mutate(data);
             }
           }}
+        />
+
+        {/* Bulk Upload Dialog */}
+        <BulkUploadDialog
+          open={showBulkUploadDialog}
+          onClose={() => setShowBulkUploadDialog(false)}
+          onSuccess={() => queryClient.invalidateQueries(['users'])}
+          teams={teams}
+          departments={departments}
         />
 
         {/* Invite User Dialog */}
