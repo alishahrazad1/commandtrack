@@ -104,10 +104,17 @@ export default function Leaderboard() {
         period_xp: userXP[user.email] || 0
       }))
       .sort((a, b) => {
-        if (timeFilter === 'all') {
-          return (b.total_xp || 0) - (a.total_xp || 0);
+        // Primary sort by XP (descending)
+        const xpDiff = timeFilter === 'all' 
+          ? (b.total_xp || 0) - (a.total_xp || 0)
+          : b.period_xp - a.period_xp;
+        
+        // If XP is the same, sort by created_date (ascending - older users rank higher)
+        if (xpDiff === 0) {
+          return new Date(a.created_date) - new Date(b.created_date);
         }
-        return b.period_xp - a.period_xp;
+        
+        return xpDiff;
       })
       .filter(u => timeFilter === 'all' ? (u.total_xp || 0) > 0 : u.period_xp > 0);
   };
