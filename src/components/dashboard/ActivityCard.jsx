@@ -120,53 +120,51 @@ export default function ActivityCard({ activity, completion, onComplete, onUploa
                 </div>
               )}
 
-              {!isCompleted && (
-                <div className="flex gap-2">
-                  {isAvailable && activity.activity_type === 'call_agenda_upload' ? (
-                    <Button 
-                      onClick={() => onUpload(activity)}
-                      className="bg-gradient-to-r from-cyan-500 to-magenta-500 hover:from-cyan-600 hover:to-magenta-600 text-white"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload & Score
-                    </Button>
-                  ) : isAvailable && activity.activity_type === 'microlearning_video' ? (
-                    <Button 
-                      onClick={() => onWatchVideo(activity)}
-                      className="bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
-                    >
-                      <Video className="w-4 h-4 mr-2" />
-                      Watch Video
-                    </Button>
-                  ) : isAvailable ? (
-                    <Button 
-                      onClick={() => onComplete(activity)}
-                      className="bg-gradient-to-r from-cyan-500 to-magenta-500 hover:from-cyan-600 hover:to-magenta-600 text-white"
-                    >
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Mark Complete
-                    </Button>
-                  ) : isLocked ? (
-                    <Button disabled className="bg-slate-700 text-slate-400 cursor-not-allowed">
-                      <Lock className="w-4 h-4 mr-2" />
-                      Complete Previous Activity
-                    </Button>
-                  ) : isUpcoming ? (
-                    <Button disabled className="bg-slate-700 text-slate-400 cursor-not-allowed">
-                      <Clock className="w-4 h-4 mr-2" />
-                      Not Available Yet
-                    </Button>
-                  ) : isExpired ? (
-                    <Button disabled className="bg-slate-700 text-slate-400 cursor-not-allowed">
-                      <Lock className="w-4 h-4 mr-2" />
-                      Activity Expired
-                    </Button>
-                  ) : null}
-                </div>
-              )}
+              <div className="flex gap-2">
+                {isAvailable && activity.activity_type === 'call_agenda_upload' ? (
+                  <Button 
+                    onClick={() => onUpload(activity)}
+                    className="bg-gradient-to-r from-cyan-500 to-magenta-500 hover:from-cyan-600 hover:to-magenta-600 text-white"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {isCompleted ? 'Upload Again' : 'Upload & Score'}
+                  </Button>
+                ) : isAvailable && activity.activity_type === 'microlearning_video' ? (
+                  <Button 
+                    onClick={() => onWatchVideo(activity)}
+                    className="bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
+                  >
+                    <Video className="w-4 h-4 mr-2" />
+                    {isCompleted ? 'Watch Again' : 'Watch Video'}
+                  </Button>
+                ) : isAvailable ? (
+                  <Button 
+                    onClick={() => onComplete(activity)}
+                    className="bg-gradient-to-r from-cyan-500 to-magenta-500 hover:from-cyan-600 hover:to-magenta-600 text-white"
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    {isCompleted ? 'Complete Again' : 'Mark Complete'}
+                  </Button>
+                ) : isLocked ? (
+                  <Button disabled className="bg-slate-700 text-slate-400 cursor-not-allowed">
+                    <Lock className="w-4 h-4 mr-2" />
+                    Complete Previous Activity
+                  </Button>
+                ) : isUpcoming ? (
+                  <Button disabled className="bg-slate-700 text-slate-400 cursor-not-allowed">
+                    <Clock className="w-4 h-4 mr-2" />
+                    Not Available Yet
+                  </Button>
+                ) : isExpired ? (
+                  <Button disabled className="bg-slate-700 text-slate-400 cursor-not-allowed">
+                    <Lock className="w-4 h-4 mr-2" />
+                    Activity Expired
+                  </Button>
+                ) : null}
+              </div>
 
               {isCompleted && (
-                <div className="flex items-center gap-2 text-sm text-green-400">
+                <div className="flex items-center gap-2 text-sm text-green-400 mt-2">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Quest Complete! +{completion.xp_earned} XP</span>
                 </div>
