@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Trophy, Medal, Award, Zap, Users, Filter, TrendingUp, Crown, Star } from "lucide-react";
+import { ArrowLeft, Trophy, Medal, Award, Zap, Users, Filter, TrendingUp, Crown, Star, X } from "lucide-react";
 import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
