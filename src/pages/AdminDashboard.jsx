@@ -242,6 +242,12 @@ export default function AdminDashboard() {
                 Announcements
               </Button>
             </Link>
+            <Link to={createPageUrl('AdminAnalytics')}>
+              <Button className="bg-indigo-500 hover:bg-indigo-600">
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Analytics
+              </Button>
+            </Link>
           </div>
         </motion.div>
 
