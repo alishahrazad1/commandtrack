@@ -142,7 +142,7 @@ export default function AdminDashboard() {
           className="flex items-center justify-between"
         >
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-magenta-500 bg-clip-text text-transparent mb-2">
+            <h1 className="text-4xl font-bold text-cyan-400 mb-2">
               ADMIN CONTROL PANEL
             </h1>
             <p className="text-slate-400">Advanced analytics and program management</p>
@@ -157,7 +157,7 @@ export default function AdminDashboard() {
               Export Report
             </Button>
             <Link to={createPageUrl('AdminActivities')}>
-              <Button className="bg-gradient-to-r from-cyan-500 to-magenta-500 hover:from-cyan-600 hover:to-magenta-600">
+              <Button className="bg-cyan-500 hover:bg-cyan-600">
                 <Settings className="w-4 h-4 mr-2" />
                 Manage Activities
               </Button>

@@ -93,7 +93,7 @@ export default function Leaderboard() {
           </Link>
 
           <div className="text-center mb-6">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 bg-clip-text text-transparent mb-2">
+            <h1 className="text-5xl font-bold text-yellow-400 mb-2">
               HIGH SCORES
             </h1>
             <p className="text-slate-400">Top players in the Command of the Message challenge</p>

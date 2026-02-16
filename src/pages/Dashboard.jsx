@@ -89,7 +89,7 @@ export default function Dashboard() {
             <p className="text-slate-400">Welcome back, Player {user.full_name}</p>
           </div>
           <Link to={createPageUrl('Leaderboard')}>
-            <Button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600">
+            <Button className="bg-orange-500 hover:bg-orange-600">
               <Trophy className="w-4 h-4 mr-2" />
               High Scores
             </Button>

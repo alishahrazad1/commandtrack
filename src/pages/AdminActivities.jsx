@@ -133,7 +133,7 @@ export default function AdminActivities() {
               resetForm();
               setShowDialog(true);
             }}
-            className="bg-gradient-to-r from-cyan-500 to-magenta-500 hover:from-cyan-600 hover:to-magenta-600"
+            className="bg-cyan-500 hover:bg-cyan-600"
           >
             <Plus className="w-4 h-4 mr-2" />
             New Activity
@@ -269,7 +269,7 @@ export default function AdminActivities() {
                 </Button>
                 <Button
                   onClick={handleSubmit}
-                  className="flex-1 bg-gradient-to-r from-cyan-500 to-magenta-500 hover:from-cyan-600 hover:to-magenta-600"
+                  className="flex-1 bg-cyan-500 hover:bg-cyan-600"
                 >
                   {editingActivity ? 'Update' : 'Create'} Activity
                 </Button>
