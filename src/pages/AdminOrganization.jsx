@@ -155,7 +155,7 @@ export default function AdminOrganization() {
   if (!user || user.role !== 'admin') return null;
 
   const getDepartmentTeams = (deptId) => teams.filter(t => t.department_id === deptId);
-  const getTeamUsers = (teamId) => users.filter(u => u.team_id === teamId);
+  const getTeamUsers = (teamId) => users.filter(u => u.data?.team_id === teamId || u.team_id === teamId);
   
   const getTeamStats = (teamId) => {
     const members = getTeamUsers(teamId);
@@ -276,7 +276,7 @@ export default function AdminOrganization() {
                       </div>
                     </div>
                     <div className="text-xs text-slate-500">
-                      {getDepartmentTeams(dept.id).length} teams • {users.filter(u => u.department_id === dept.id).length} members
+                      {getDepartmentTeams(dept.id).length} teams • {users.filter(u => u.data?.department_id === dept.id || u.department_id === dept.id).length} members
                     </div>
                   </div>
                 ))}
@@ -401,8 +401,8 @@ export default function AdminOrganization() {
                   </thead>
                   <tbody>
                     {users.map((u) => {
-                      const userDept = departments.find(d => d.id === u.department_id);
-                      const userTeam = teams.find(t => t.id === u.team_id);
+                      const userDept = departments.find(d => d.id === (u.data?.department_id || u.department_id));
+                      const userTeam = teams.find(t => t.id === (u.data?.team_id || u.team_id));
                       
                       return (
                         <tr key={u.id} className="border-b border-slate-800 hover:bg-slate-800/50">
@@ -428,7 +428,7 @@ export default function AdminOrganization() {
                           </td>
                           <td className="py-3 px-4">
                             <Select
-                              value={u.team_id || 'none'}
+                              value={(u.data?.team_id || u.team_id) || 'none'}
                               onValueChange={(value) => {
                                 const newTeamId = value === 'none' ? null : value;
                                 const newTeam = teams.find(t => t.id === newTeamId);
@@ -436,7 +436,7 @@ export default function AdminOrganization() {
                                   userId: u.id,
                                   data: {
                                     team_id: newTeamId,
-                                    department_id: newTeam ? newTeam.department_id : u.department_id
+                                    department_id: newTeam ? newTeam.department_id : (u.data?.department_id || u.department_id)
                                   }
                                 });
                               }}
@@ -453,10 +453,10 @@ export default function AdminOrganization() {
                             </Select>
                           </td>
                           <td className="py-3 px-4 text-sm font-bold text-cyan-400">
-                            {u.total_xp || 0}
+                            {u.data?.total_xp || u.total_xp || 0}
                           </td>
                           <td className="py-3 px-4 text-sm text-slate-400">
-                            {u.level || 1}
+                            {u.data?.level || u.level || 1}
                           </td>
                         </tr>
                       );
