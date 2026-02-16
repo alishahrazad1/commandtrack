@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
-import { Users, Target, TrendingUp, Settings, BarChart3, Download, Eye, Edit2, Check, X, Building2 } from "lucide-react";
+import { Users, Target, TrendingUp, Settings, BarChart3, Download, Eye, Edit2, Check, X, Building2, ChevronRight } from "lucide-react";
 import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
 import FilterPanel from "../components/admin/FilterPanel";
@@ -191,6 +191,13 @@ export default function AdminDashboard() {
           className="flex items-center justify-between"
         >
           <div>
+            <div className="flex items-center gap-2 mb-4 text-sm">
+              <Link to={createPageUrl('Dashboard')} className="text-slate-400 hover:text-cyan-400 transition-colors">
+                Dashboard
+              </Link>
+              <ChevronRight className="w-4 h-4 text-slate-600" />
+              <span className="text-cyan-400">Admin Panel</span>
+            </div>
             <h1 className="text-4xl font-bold text-cyan-400 mb-2">
               ADMIN CONTROL PANEL
             </h1>
