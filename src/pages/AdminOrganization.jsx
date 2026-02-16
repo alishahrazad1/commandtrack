@@ -24,6 +24,7 @@ export default function AdminOrganization() {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('user');
+  const [inviteTeamId, setInviteTeamId] = useState('');
   const [isInviting, setIsInviting] = useState(false);
   
   const queryClient = useQueryClient();
@@ -130,10 +131,17 @@ export default function AdminOrganization() {
     setIsInviting(true);
     try {
       await base44.users.inviteUser(inviteEmail, inviteRole);
-      toast.success(`Invitation sent to ${inviteEmail}`);
+      
+      if (inviteTeamId) {
+        toast.success(`Invitation sent to ${inviteEmail}. Assign them to the team after they accept.`);
+      } else {
+        toast.success(`Invitation sent to ${inviteEmail}`);
+      }
+      
       setShowInviteDialog(false);
       setInviteEmail('');
       setInviteRole('user');
+      setInviteTeamId('');
       queryClient.invalidateQueries(['users']);
     } catch (error) {
       toast.error(error.message || 'Failed to send invitation');
@@ -520,12 +528,34 @@ export default function AdminOrganization() {
                 </Select>
               </div>
 
+              <div>
+                <label className="text-sm text-slate-300 mb-2 block">Team (Optional)</label>
+                <Select value={inviteTeamId} onValueChange={setInviteTeamId}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                    <SelectValue placeholder="Select team (can assign later)" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value={null}>No Team</SelectItem>
+                    {teams.map(t => {
+                      const dept = departments.find(d => d.id === t.department_id);
+                      return (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name} {dept ? `(${dept.name})` : ''}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500 mt-1">Note: Team assignment will be saved for reference. Assign in the Team Members table after they accept.</p>
+              </div>
+
               <div className="flex gap-3">
                 <Button
                   onClick={() => {
                     setShowInviteDialog(false);
                     setInviteEmail('');
                     setInviteRole('user');
+                    setInviteTeamId('');
                   }}
                   variant="outline"
                   className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800"
