@@ -21,8 +21,6 @@ export default function AdminOrganization() {
   const [showTeamDialog, setShowTeamDialog] = useState(false);
   const [editingDept, setEditingDept] = useState(null);
   const [editingTeam, setEditingTeam] = useState(null);
-  const [selectedTeam, setSelectedTeam] = useState(null);
-  const [searchEmail, setSearchEmail] = useState('');
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('user');
@@ -119,30 +117,9 @@ export default function AdminOrganization() {
     mutationFn: ({ userId, data }) => base44.entities.User.update(userId, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['users']);
-      setSearchEmail('');
+      toast.success('User updated successfully');
     },
   });
-
-  const handleAddUserToTeam = (teamId) => {
-    const userToAdd = users.find(u => u.email.toLowerCase() === searchEmail.toLowerCase());
-    if (!userToAdd) {
-      alert('User not found');
-      return;
-    }
-    
-    const team = teams.find(t => t.id === teamId);
-    updateUserMutation.mutate({
-      userId: userToAdd.id,
-      data: { team_id: teamId, department_id: team.department_id }
-    });
-  };
-
-  const handleRemoveUser = (userId) => {
-    updateUserMutation.mutate({
-      userId,
-      data: { team_id: null }
-    });
-  };
 
   const handleInviteUser = async () => {
     if (!inviteEmail) {
@@ -374,125 +351,100 @@ export default function AdminOrganization() {
 
           {/* Team Members Tab */}
           <TabsContent value="members">
-            <div className="flex justify-end mb-4">
-              <Button
-                onClick={() => setShowInviteDialog(true)}
-                className="bg-green-500 hover:bg-green-600"
-              >
-                <Mail className="w-4 h-4 mr-2" />
-                Invite New User
-              </Button>
-            </div>
+            <Card className="bg-slate-900 border-slate-700 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-cyan-400 flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  All Users
+                </h2>
+                <Button
+                  onClick={() => setShowInviteDialog(true)}
+                  className="bg-green-500 hover:bg-green-600"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Invite New User
+                </Button>
+              </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {teams.map((team) => {
-                const dept = departments.find(d => d.id === team.department_id);
-                const stats = getTeamStats(team.id);
-                const members = getTeamUsers(team.id);
-                const assignedPaths = getAssignedPaths(team.id);
-                
-                return (
-                  <Card key={team.id} className="bg-slate-900 border-slate-700 p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-white">{team.name}</h3>
-                        <p className="text-sm text-slate-400">{dept?.name}</p>
-                        {team.description && (
-                          <p className="text-sm text-slate-500 mt-1">{team.description}</p>
-                        )}
-                      </div>
-                      <Button
-                        onClick={() => setSelectedTeam(team.id)}
-                        size="sm"
-                        className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30"
-                      >
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Add Member
-                      </Button>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3 mb-4">
-                      <div className="bg-slate-800 rounded-lg p-3 border border-slate-700">
-                        <Users className="w-4 h-4 text-cyan-400 mb-1" />
-                        <p className="text-2xl font-bold text-white">{stats.members}</p>
-                        <p className="text-xs text-slate-400">Members</p>
-                      </div>
-                      <div className="bg-slate-800 rounded-lg p-3 border border-slate-700">
-                        <TrendingUp className="w-4 h-4 text-orange-400 mb-1" />
-                        <p className="text-2xl font-bold text-white">{stats.avgXP}</p>
-                        <p className="text-xs text-slate-400">Avg XP</p>
-                      </div>
-                      <div className="bg-slate-800 rounded-lg p-3 border border-slate-700">
-                        <Target className="w-4 h-4 text-purple-400 mb-1" />
-                        <p className="text-2xl font-bold text-white">{stats.completionRate}%</p>
-                        <p className="text-xs text-slate-400">Complete</p>
-                      </div>
-                    </div>
-
-                    {assignedPaths.length > 0 && (
-                      <div className="mb-4">
-                        <p className="text-sm text-slate-400 mb-2">Assigned Paths:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {assignedPaths.map(path => (
-                            <Badge key={path.id} className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                              {path.name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div>
-                      <p className="text-sm text-slate-400 mb-2">Team Members:</p>
-                      {members.length === 0 ? (
-                        <p className="text-sm text-slate-500 italic">No members assigned</p>
-                      ) : (
-                        <div className="space-y-2">
-                          {members.map(member => (
-                            <div key={member.id} className="flex items-center justify-between bg-slate-800 rounded p-2 border border-slate-700">
-                              <div className="flex items-center gap-3">
-                                <div 
-                                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
-                                  style={{ backgroundColor: member.avatar_color || '#06b6d4' }}
-                                >
-                                  {member.full_name?.charAt(0).toUpperCase()}
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium text-white">{member.full_name}</p>
-                                  <p className="text-xs text-slate-400">{member.email}</p>
-                                </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-700">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">User</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">Email</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">Role</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">Department</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">Team</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">XP</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">Level</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((u) => {
+                      const userDept = departments.find(d => d.id === u.department_id);
+                      const userTeam = teams.find(t => t.id === u.team_id);
+                      
+                      return (
+                        <tr key={u.id} className="border-b border-slate-800 hover:bg-slate-800/50">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-3">
+                              <div 
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                                style={{ backgroundColor: u.avatar_color || '#06b6d4' }}
+                              >
+                                {u.full_name?.charAt(0).toUpperCase()}
                               </div>
-                              <div className="flex items-center gap-3">
-                                <div className="text-right">
-                                  <p className="text-sm font-bold text-cyan-400">{member.total_xp || 0} XP</p>
-                                  <p className="text-xs text-slate-500">Level {member.level || 1}</p>
-                                </div>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => handleRemoveUser(member.id)}
-                                  className="text-red-400 hover:text-red-300"
-                                >
-                                  <X className="w-4 h-4" />
-                                </Button>
-                              </div>
+                              <span className="text-sm font-medium text-white">{u.full_name}</span>
                             </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-
-            {teams.length === 0 && (
-              <Card className="bg-slate-900 border-slate-700 p-12 text-center">
-                <Users className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-400 text-lg mb-2">No teams created yet</p>
-                <p className="text-slate-500 text-sm">Create teams in the Teams tab</p>
-              </Card>
-            )}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-slate-400">{u.email}</td>
+                          <td className="py-3 px-4">
+                            <Badge className={u.role === 'admin' ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'}>
+                              {u.role}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-slate-400">
+                            {userDept?.name || '-'}
+                          </td>
+                          <td className="py-3 px-4">
+                            <Select
+                              value={u.team_id || 'none'}
+                              onValueChange={(value) => {
+                                const newTeamId = value === 'none' ? null : value;
+                                const newTeam = teams.find(t => t.id === newTeamId);
+                                updateUserMutation.mutate({
+                                  userId: u.id,
+                                  data: {
+                                    team_id: newTeamId,
+                                    department_id: newTeam ? newTeam.department_id : u.department_id
+                                  }
+                                });
+                              }}
+                            >
+                              <SelectTrigger className="bg-slate-800 border-slate-700 text-white h-8 w-40">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-slate-800 border-slate-700">
+                                <SelectItem value="none">No Team</SelectItem>
+                                {teams.map(t => (
+                                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </td>
+                          <td className="py-3 px-4 text-sm font-bold text-cyan-400">
+                            {u.total_xp || 0}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-slate-400">
+                            {u.level || 1}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
           </TabsContent>
         </Tabs>
 
@@ -532,46 +484,6 @@ export default function AdminOrganization() {
             }
           }}
         />
-
-        {/* Add Member Dialog */}
-        <Dialog open={!!selectedTeam} onOpenChange={() => setSelectedTeam(null)}>
-          <DialogContent className="bg-slate-900 border-cyan-500/30 text-white">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-cyan-400">
-                Add Team Member
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm text-slate-300 mb-2 block">User Email</label>
-                <Input
-                  value={searchEmail}
-                  onChange={(e) => setSearchEmail(e.target.value)}
-                  placeholder="user@example.com"
-                  className="bg-slate-800 border-slate-700 text-white"
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => setSelectedTeam(null)}
-                  variant="outline"
-                  className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => handleAddUserToTeam(selectedTeam)}
-                  disabled={!searchEmail}
-                  className="flex-1 bg-cyan-500 hover:bg-cyan-600"
-                >
-                  Add to Team
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
 
         {/* Invite User Dialog */}
         <Dialog open={showInviteDialog} onOpenChange={() => setShowInviteDialog(false)}>
