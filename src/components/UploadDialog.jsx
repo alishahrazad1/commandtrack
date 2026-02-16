@@ -16,6 +16,19 @@ export default function UploadDialog({ activity, open, onClose, onSuccess }) {
   const handleSubmit = async () => {
     if (!file || !activity) return;
 
+    const now = new Date();
+    const startDate = activity.start_date ? new Date(activity.start_date) : null;
+    const endDate = activity.end_date ? new Date(activity.end_date) : null;
+    
+    if (startDate && now < startDate) {
+      alert('This activity is not available yet.');
+      return;
+    }
+    if (endDate && now > endDate) {
+      alert('This activity has expired.');
+      return;
+    }
+
     setIsProcessing(true);
     try {
       // Upload file

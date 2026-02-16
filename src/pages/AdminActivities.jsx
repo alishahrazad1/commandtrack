@@ -30,7 +30,9 @@ export default function AdminActivities() {
     xp_value: 100,
     scoring_criteria: '',
     order: 0,
-    is_active: true
+    is_active: true,
+    start_date: '',
+    end_date: ''
   });
 
   const queryClient = useQueryClient();
@@ -82,7 +84,9 @@ export default function AdminActivities() {
       xp_value: 100,
       scoring_criteria: '',
       order: 0,
-      is_active: true
+      is_active: true,
+      start_date: '',
+      end_date: ''
     });
     setEditingActivity(null);
   };
@@ -96,16 +100,23 @@ export default function AdminActivities() {
       xp_value: activity.xp_value,
       scoring_criteria: activity.scoring_criteria || '',
       order: activity.order,
-      is_active: activity.is_active
+      is_active: activity.is_active,
+      start_date: activity.start_date ? new Date(activity.start_date).toISOString().slice(0, 16) : '',
+      end_date: activity.end_date ? new Date(activity.end_date).toISOString().slice(0, 16) : ''
     });
     setShowDialog(true);
   };
 
   const handleSubmit = () => {
+    const dataToSubmit = {
+      ...formData,
+      start_date: formData.start_date ? new Date(formData.start_date).toISOString() : null,
+      end_date: formData.end_date ? new Date(formData.end_date).toISOString() : null
+    };
     if (editingActivity) {
-      updateMutation.mutate({ id: editingActivity.id, data: formData });
+      updateMutation.mutate({ id: editingActivity.id, data: dataToSubmit });
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(dataToSubmit);
     }
   };
 
@@ -255,6 +266,27 @@ export default function AdminActivities() {
                   />
                 </div>
               )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-300">Start Date/Time (Optional)</Label>
+                  <Input
+                    type="datetime-local"
+                    value={formData.start_date}
+                    onChange={(e) => setFormData({...formData, start_date: e.target.value})}
+                    className="bg-slate-800 border-slate-700 text-white mt-2"
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-300">End Date/Time (Optional)</Label>
+                  <Input
+                    type="datetime-local"
+                    value={formData.end_date}
+                    onChange={(e) => setFormData({...formData, end_date: e.target.value})}
+                    className="bg-slate-800 border-slate-700 text-white mt-2"
+                  />
+                </div>
+              </div>
 
               <div className="flex gap-4">
                 <Button
