@@ -19,6 +19,7 @@ export default function Leaderboard() {
   const [timeFilter, setTimeFilter] = useState('all');
   const [teamFilter, setTeamFilter] = useState('all');
   const [deptFilter, setDeptFilter] = useState('all');
+  const [pathFilter, setPathFilter] = useState('all');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -45,6 +46,16 @@ export default function Leaderboard() {
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
+  });
+
+  const { data: paths = [] } = useQuery({
+    queryKey: ['paths'],
+    queryFn: () => base44.entities.ActivityPath.list(),
+  });
+
+  const { data: activities = [] } = useQuery({
+    queryKey: ['activities'],
+    queryFn: () => base44.entities.Activity.list(),
   });
 
   const getDateRange = () => {
@@ -80,6 +91,16 @@ export default function Leaderboard() {
     if (startDate && endDate) {
       filteredCompletions = completions.filter(c => 
         c.completed_at && new Date(c.completed_at) >= startDate && new Date(c.completed_at) <= endDate
+      );
+    }
+
+    // Filter by learning path
+    if (pathFilter !== 'all') {
+      const pathActivityIds = activities
+        .filter(a => a.path_id === pathFilter)
+        .map(a => a.id);
+      filteredCompletions = filteredCompletions.filter(c => 
+        pathActivityIds.includes(c.activity_id)
       );
     }
 
@@ -129,6 +150,16 @@ export default function Leaderboard() {
     if (startDate && endDate) {
       filteredCompletions = completions.filter(c => 
         c.completed_at && new Date(c.completed_at) >= startDate && new Date(c.completed_at) <= endDate
+      );
+    }
+
+    // Filter by learning path
+    if (pathFilter !== 'all') {
+      const pathActivityIds = activities
+        .filter(a => a.path_id === pathFilter)
+        .map(a => a.id);
+      filteredCompletions = filteredCompletions.filter(c => 
+        pathActivityIds.includes(c.activity_id)
       );
     }
 
@@ -268,7 +299,7 @@ export default function Leaderboard() {
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4"
             >
               <div>
                 <Label className="text-slate-300 text-sm mb-2 block">Time Period</Label>
@@ -314,6 +345,21 @@ export default function Leaderboard() {
                       .map(team => (
                         <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
                       ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-slate-300 text-sm mb-2 block">Learning Path</Label>
+                <Select value={pathFilter} onValueChange={setPathFilter}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                    <SelectItem value="all">Overall High Scores</SelectItem>
+                    {paths.map(path => (
+                      <SelectItem key={path.id} value={path.id}>{path.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -381,7 +427,7 @@ export default function Leaderboard() {
             </motion.div>
           )}
 
-          {(teamFilter !== 'all' || deptFilter !== 'all' || timeFilter !== 'all') && (
+          {(teamFilter !== 'all' || deptFilter !== 'all' || timeFilter !== 'all' || pathFilter !== 'all') && (
             <div className="flex gap-2 mt-4 flex-wrap">
               {deptFilter !== 'all' && (
                 <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">
@@ -393,6 +439,12 @@ export default function Leaderboard() {
                 <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
                   {teams.find(t => t.id === teamFilter)?.name}
                   <X className="w-3 h-3 ml-1 cursor-pointer" onClick={() => setTeamFilter('all')} />
+                </Badge>
+              )}
+              {pathFilter !== 'all' && (
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                  {paths.find(p => p.id === pathFilter)?.name}
+                  <X className="w-3 h-3 ml-1 cursor-pointer" onClick={() => setPathFilter('all')} />
                 </Badge>
               )}
               {timeFilter !== 'all' && (
@@ -413,6 +465,7 @@ export default function Leaderboard() {
                   setTeamFilter('all');
                   setDeptFilter('all');
                   setTimeFilter('all');
+                  setPathFilter('all');
                 }}
                 className="text-xs text-red-400 hover:text-red-300"
               >
