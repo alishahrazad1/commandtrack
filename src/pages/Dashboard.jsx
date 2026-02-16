@@ -88,12 +88,22 @@ export default function Dashboard() {
             </h1>
             <p className="text-slate-400">Welcome back, Player {user.full_name}</p>
           </div>
-          <Link to={createPageUrl('Leaderboard')}>
-            <Button className="bg-orange-500 hover:bg-orange-600">
-              <Trophy className="w-4 h-4 mr-2" />
-              High Scores
-            </Button>
-          </Link>
+          <div className="flex gap-3">
+            {user.role === 'admin' && (
+              <Link to={createPageUrl('AdminDashboard')}>
+                <Button className="bg-cyan-500 hover:bg-cyan-600">
+                  <Target className="w-4 h-4 mr-2" />
+                  Admin Panel
+                </Button>
+              </Link>
+            )}
+            <Link to={createPageUrl('Leaderboard')}>
+              <Button className="bg-orange-500 hover:bg-orange-600">
+                <Trophy className="w-4 h-4 mr-2" />
+                High Scores
+              </Button>
+            </Link>
+          </div>
         </motion.div>
 
         <motion.div
