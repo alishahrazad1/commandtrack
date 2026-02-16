@@ -233,7 +233,7 @@ export default function Leaderboard() {
 
           <div className="mb-6">
             <h1 className="text-4xl font-bold text-cyan-400 mb-2">
-              HIGH SCORES
+              LEADERBOARD
             </h1>
           </div>
         </motion.div>
