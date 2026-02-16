@@ -124,7 +124,7 @@ export default function ActivityCard({ activity, completion, onComplete, onUploa
                 {isAvailable && activity.activity_type === 'call_agenda_upload' ? (
                   <Button 
                     onClick={() => onUpload(activity)}
-                    className="bg-gradient-to-r from-cyan-500 to-magenta-500 hover:from-cyan-600 hover:to-magenta-600 text-white"
+                    className="bg-purple-500 hover:bg-purple-600 text-white"
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     {isCompleted ? 'Upload Again' : 'Upload & Score'}
@@ -132,7 +132,7 @@ export default function ActivityCard({ activity, completion, onComplete, onUploa
                 ) : isAvailable && activity.activity_type === 'microlearning_video' ? (
                   <Button 
                     onClick={() => onWatchVideo(activity)}
-                    className="bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
+                    className="bg-green-500 hover:bg-green-600 text-white"
                   >
                     <Video className="w-4 h-4 mr-2" />
                     {isCompleted ? 'Watch Again' : 'Watch Video'}
@@ -140,7 +140,7 @@ export default function ActivityCard({ activity, completion, onComplete, onUploa
                 ) : isAvailable ? (
                   <Button 
                     onClick={() => onComplete(activity)}
-                    className="bg-gradient-to-r from-cyan-500 to-magenta-500 hover:from-cyan-600 hover:to-magenta-600 text-white"
+                    className="bg-cyan-500 hover:bg-cyan-600 text-white"
                   >
                     <CheckCircle2 className="w-4 h-4 mr-2" />
                     {isCompleted ? 'Complete Again' : 'Mark Complete'}
