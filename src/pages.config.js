@@ -51,6 +51,8 @@ import AdminActivities from './pages/AdminActivities';
 import AdminDashboard from './pages/AdminDashboard';
 import Dashboard from './pages/Dashboard';
 import Leaderboard from './pages/Leaderboard';
+import AdminOrganization from './pages/AdminOrganization';
+import TeamLeadDashboard from './pages/TeamLeadDashboard';
 
 
 export const PAGES = {
@@ -58,6 +60,8 @@ export const PAGES = {
     "AdminDashboard": AdminDashboard,
     "Dashboard": Dashboard,
     "Leaderboard": Leaderboard,
+    "AdminOrganization": AdminOrganization,
+    "TeamLeadDashboard": TeamLeadDashboard,
 }
 
 export const pagesConfig = {
