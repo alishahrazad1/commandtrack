@@ -21,10 +21,12 @@ export default function Dashboard() {
     base44.auth.me().then(setUser);
   }, []);
 
-  const { data: activities = [] } = useQuery({
+  const { data: allActivities = [] } = useQuery({
     queryKey: ['activities'],
     queryFn: () => base44.entities.Activity.filter({ is_active: true }, 'order'),
   });
+
+  const activities = allActivities;
 
   const { data: completions = [] } = useQuery({
     queryKey: ['completions', user?.email],
@@ -50,6 +52,17 @@ export default function Dashboard() {
 
   const completeActivityMutation = useMutation({
     mutationFn: async (activity) => {
+      const now = new Date();
+      const startDate = activity.start_date ? new Date(activity.start_date) : null;
+      const endDate = activity.end_date ? new Date(activity.end_date) : null;
+      
+      if (startDate && now < startDate) {
+        throw new Error('This activity is not available yet.');
+      }
+      if (endDate && now > endDate) {
+        throw new Error('This activity has expired.');
+      }
+
       await base44.entities.ActivityCompletion.create({
         activity_id: activity.id,
         user_email: user.email,
