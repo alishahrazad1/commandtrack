@@ -60,7 +60,6 @@ import TeamLeadDashboard from './pages/TeamLeadDashboard';
 import Notifications from './pages/Notifications';
 import NotificationSettings from './pages/NotificationSettings';
 import AdminAnnouncements from './pages/AdminAnnouncements';
-import AdminAnalytics from './pages/AdminAnalytics';
 import __Layout from './Layout.jsx';
 
 
@@ -78,7 +77,6 @@ export const PAGES = {
     "Notifications": Notifications,
     "NotificationSettings": NotificationSettings,
     "AdminAnnouncements": AdminAnnouncements,
-    "AdminAnalytics": AdminAnalytics,
 }
 
 export const pagesConfig = {

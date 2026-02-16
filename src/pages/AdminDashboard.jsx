@@ -14,6 +14,11 @@ import ActivityPerformance from "../components/admin/ActivityPerformance";
 import TrendsChart from "../components/admin/TrendsChart";
 import EmployeeReport from "../components/admin/EmployeeReport";
 import ComparisonReport from "../components/admin/ComparisonReport";
+import UserProgressChart from "../components/analytics/UserProgressChart";
+import PopularActivitiesChart from "../components/analytics/PopularActivitiesChart";
+import PathCompletionChart from "../components/analytics/PathCompletionChart";
+import StruggleAreasChart from "../components/analytics/StruggleAreasChart";
+import AnalyticsExport from "../components/analytics/AnalyticsExport";
 
 export default function AdminDashboard() {
   const [user, setUser] = useState(null);
@@ -56,6 +61,11 @@ export default function AdminDashboard() {
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
+  });
+
+  const { data: paths = [] } = useQuery({
+    queryKey: ['paths'],
+    queryFn: () => base44.entities.ActivityPath.list(),
   });
 
   const updateUserMutation = useMutation({
@@ -201,7 +211,6 @@ export default function AdminDashboard() {
             <h1 className="text-4xl font-bold text-cyan-400 mb-2">
               ADMIN CONTROL PANEL
             </h1>
-            <p className="text-slate-400">Advanced analytics and program management</p>
           </div>
           <div className="flex gap-3">
             <Button
@@ -240,12 +249,6 @@ export default function AdminDashboard() {
               <Button className="bg-green-500 hover:bg-green-600">
                 <Megaphone className="w-4 h-4 mr-2" />
                 Announcements
-              </Button>
-            </Link>
-            <Link to={createPageUrl('AdminAnalytics')}>
-              <Button className="bg-indigo-500 hover:bg-indigo-600">
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Analytics
               </Button>
             </Link>
           </div>
@@ -304,20 +307,35 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="employees" className="space-y-6">
-          <TabsList className="bg-slate-800 border border-slate-700">
-            <TabsTrigger value="employees" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              Employee Progress
-            </TabsTrigger>
-            <TabsTrigger value="comparison" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              Dept/Team Comparison
-            </TabsTrigger>
-            <TabsTrigger value="activities" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              Activity Performance
-            </TabsTrigger>
-            <TabsTrigger value="trends" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              Trends
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between">
+            <TabsList className="bg-slate-800 border border-slate-700">
+              <TabsTrigger value="employees" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
+                Employee Progress
+              </TabsTrigger>
+              <TabsTrigger value="comparison" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
+                Dept/Team Comparison
+              </TabsTrigger>
+              <TabsTrigger value="activities" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
+                Activity Performance
+              </TabsTrigger>
+              <TabsTrigger value="trends" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
+                Trends
+              </TabsTrigger>
+              <TabsTrigger value="progress" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
+                User Levels
+              </TabsTrigger>
+              <TabsTrigger value="popular" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
+                Popular
+              </TabsTrigger>
+              <TabsTrigger value="paths" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
+                Path Rates
+              </TabsTrigger>
+              <TabsTrigger value="struggles" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
+                Struggles
+              </TabsTrigger>
+            </TabsList>
+            <AnalyticsExport users={users} activities={activities} paths={paths} completions={completions} />
+          </div>
 
           <TabsContent value="employees">
             <Card className="bg-slate-900 border-slate-700 p-6">
@@ -444,6 +462,22 @@ export default function AdminDashboard() {
 
           <TabsContent value="trends">
             <TrendsChart completions={filteredCompletions} />
+          </TabsContent>
+
+          <TabsContent value="progress">
+            <UserProgressChart users={users} completions={completions} />
+          </TabsContent>
+
+          <TabsContent value="popular">
+            <PopularActivitiesChart activities={activities} completions={completions} />
+          </TabsContent>
+
+          <TabsContent value="paths">
+            <PathCompletionChart paths={paths} activities={activities} completions={completions} users={users} />
+          </TabsContent>
+
+          <TabsContent value="struggles">
+            <StruggleAreasChart activities={activities} completions={completions} users={users} />
           </TabsContent>
         </Tabs>
       </div>
