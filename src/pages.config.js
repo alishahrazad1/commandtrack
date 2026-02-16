@@ -54,6 +54,7 @@ import Leaderboard from './pages/Leaderboard';
 import AdminOrganization from './pages/AdminOrganization';
 import TeamLeadDashboard from './pages/TeamLeadDashboard';
 import Profile from './pages/Profile';
+import AdminBadges from './pages/AdminBadges';
 
 
 export const PAGES = {
@@ -64,6 +65,7 @@ export const PAGES = {
     "AdminOrganization": AdminOrganization,
     "TeamLeadDashboard": TeamLeadDashboard,
     "Profile": Profile,
+    "AdminBadges": AdminBadges,
 }
 
 export const pagesConfig = {
