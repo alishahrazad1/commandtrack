@@ -3,9 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Trophy, Medal, Award, Zap } from "lucide-react";
+import { ArrowLeft, Trophy, Medal, Award, Zap, Users } from "lucide-react";
 import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
 
@@ -20,6 +20,16 @@ export default function Leaderboard() {
   const { data: completions = [] } = useQuery({
     queryKey: ['completions'],
     queryFn: () => base44.entities.ActivityCompletion.list('-completed_at'),
+  });
+
+  const { data: departments = [] } = useQuery({
+    queryKey: ['departments'],
+    queryFn: () => base44.entities.Department.list(),
+  });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
   });
 
   const getFilteredUsers = () => {
@@ -62,6 +72,48 @@ export default function Leaderboard() {
 
   const rankedUsers = getFilteredUsers();
 
+  // Team leaderboard calculation
+  const getTeamStandings = () => {
+    let filteredCompletions = completions;
+
+    if (timeFilter === 'week') {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      filteredCompletions = completions.filter(c => 
+        c.completed_at && new Date(c.completed_at) >= weekAgo
+      );
+    } else if (timeFilter === 'month') {
+      const monthAgo = new Date();
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      filteredCompletions = completions.filter(c => 
+        c.completed_at && new Date(c.completed_at) >= monthAgo
+      );
+    }
+
+    return teams.map(team => {
+      const teamMembers = users.filter(u => u.team_id === team.id);
+      const teamMemberEmails = teamMembers.map(u => u.email);
+      
+      const teamCompletions = filteredCompletions.filter(c => 
+        teamMemberEmails.includes(c.user_email) && c.status === 'completed'
+      );
+      
+      const totalXP = teamCompletions.reduce((sum, c) => sum + (c.xp_earned || 0), 0);
+      const avgXP = teamMembers.length > 0 ? Math.round(totalXP / teamMembers.length) : 0;
+      
+      return {
+        ...team,
+        totalXP,
+        avgXP,
+        memberCount: teamMembers.length
+      };
+    })
+      .filter(t => t.totalXP > 0)
+      .sort((a, b) => b.totalXP - a.totalXP);
+  };
+
+  const teamStandings = getTeamStandings();
+
   const getRankIcon = (rank) => {
     if (rank === 1) return <Trophy className="w-6 h-6 text-yellow-400" />;
     if (rank === 2) return <Medal className="w-6 h-6 text-slate-300" />;
@@ -96,10 +148,23 @@ export default function Leaderboard() {
             <h1 className="text-5xl font-bold text-yellow-400 mb-2">
               HIGH SCORES
             </h1>
-            <p className="text-slate-400">Top players in the Command of the Message challenge</p>
+            <p className="text-slate-400">Top players and teams in the Command of the Message challenge</p>
           </div>
+        </motion.div>
 
-          <div className="flex justify-center mb-6">
+        <Tabs defaultValue="players" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <TabsList className="bg-slate-800 border border-slate-700">
+              <TabsTrigger value="players" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
+                <Trophy className="w-4 h-4 mr-2" />
+                Players
+              </TabsTrigger>
+              <TabsTrigger value="teams" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
+                <Users className="w-4 h-4 mr-2" />
+                Teams
+              </TabsTrigger>
+            </TabsList>
+
             <Tabs value={timeFilter} onValueChange={setTimeFilter}>
               <TabsList className="bg-slate-800 border border-slate-700">
                 <TabsTrigger value="all" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
@@ -114,7 +179,8 @@ export default function Leaderboard() {
               </TabsList>
             </Tabs>
           </div>
-        </motion.div>
+
+          <TabsContent value="players">
 
         <div className="space-y-3">
           {rankedUsers.map((user, index) => (
@@ -171,12 +237,76 @@ export default function Leaderboard() {
           ))}
         </div>
 
-        {rankedUsers.length === 0 && (
-          <Card className="bg-slate-900 border-slate-700 p-12 text-center">
-            <Trophy className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400">No players on the leaderboard yet. Start completing quests!</p>
-          </Card>
-        )}
+            {rankedUsers.length === 0 && (
+              <Card className="bg-slate-900 border-slate-700 p-12 text-center">
+                <Trophy className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <p className="text-slate-400">No players on the leaderboard yet. Start completing quests!</p>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="teams">
+            <div className="space-y-3">
+              {teamStandings.map((team, index) => {
+                const dept = departments.find(d => d.id === team.department_id);
+                const Icon = index === 0 ? Trophy : index === 1 ? Medal : index === 2 ? Award : Users;
+                const iconColor = index === 0 ? 'text-yellow-400' : index === 1 ? 'text-slate-300' : index === 2 ? 'text-orange-400' : 'text-cyan-400';
+                
+                return (
+                  <motion.div
+                    key={team.id}
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <Card className={`relative overflow-hidden bg-gradient-to-r ${getRankColor(index + 1)} border`}>
+                      <div className="absolute inset-0 bg-grid-pattern opacity-10" />
+                      
+                      <div className="relative p-5">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-center w-12 h-12">
+                              {index < 3 ? (
+                                <Icon className={iconColor} style={{ width: '24px', height: '24px' }} />
+                              ) : (
+                                <span className="text-2xl font-bold text-slate-400">#{index + 1}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex-1">
+                            <h3 className="font-bold text-xl text-white">{team.name}</h3>
+                            {dept && <p className="text-sm text-orange-400">{dept.name}</p>}
+                            <p className="text-xs text-slate-400">{team.memberCount} members</p>
+                          </div>
+
+                          <div className="text-right">
+                            <div className="flex items-center gap-2 justify-end mb-1">
+                              <Zap className="w-5 h-5 text-cyan-400" />
+                              <span className="text-2xl font-bold text-cyan-400">
+                                {team.totalXP.toLocaleString()}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-400">
+                              Avg: {team.avgXP.toLocaleString()} XP
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+
+              {teamStandings.length === 0 && (
+                <Card className="bg-slate-900 border-slate-700 p-12 text-center">
+                  <Users className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                  <p className="text-slate-400">No teams on the leaderboard yet.</p>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
