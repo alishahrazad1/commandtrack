@@ -3,9 +3,10 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Filter } from "lucide-react";
 
-export default function FilterPanel({ filters, onFilterChange, users, departments = [], teams = [] }) {
+export default function FilterPanel({ filters, onFilterChange, users, departments = [], teams = [], paths = [] }) {
   const deptNames = departments.map(d => d.name);
   const teamNames = teams.map(t => t.name);
+  const pathOptions = paths.map(p => ({ id: p.id, name: p.name }));
 
   return (
     <Card className="bg-slate-900 border-slate-700 p-4">
@@ -14,7 +15,7 @@ export default function FilterPanel({ filters, onFilterChange, users, department
         <h3 className="font-semibold text-white">Filters</h3>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="text-sm text-slate-400 mb-2 block">Department</label>
           <Select value={filters.department} onValueChange={(v) => onFilterChange({ ...filters, department: v })}>
@@ -40,6 +41,21 @@ export default function FilterPanel({ filters, onFilterChange, users, department
               <SelectItem value="all">All Teams</SelectItem>
               {teamNames.map(team => (
                 <SelectItem key={team} value={team}>{team}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label className="text-sm text-slate-400 mb-2 block">Learning Path</label>
+          <Select value={filters.path} onValueChange={(v) => onFilterChange({ ...filters, path: v })}>
+            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+              <SelectValue placeholder="All Paths" />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800 border-slate-700 text-white">
+              <SelectItem value="all">All Paths</SelectItem>
+              {pathOptions.map(path => (
+                <SelectItem key={path.id} value={path.id}>{path.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
