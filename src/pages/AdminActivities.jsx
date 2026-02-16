@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Plus, Pencil, Trash2, BookOpen, Users, MessageSquare, Upload, Video } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, BookOpen, Users, MessageSquare, Upload, Video, CheckCircle2 } from "lucide-react";
 import { createPageUrl } from "../utils";
+import BulkCompletionDialog from "../components/admin/BulkCompletionDialog";
 
 const activityIcons = {
   training_module: BookOpen,
@@ -39,6 +40,8 @@ export default function AdminActivities() {
     path_order: 0
   });
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [selectedActivities, setSelectedActivities] = useState([]);
+  const [showBulkDialog, setShowBulkDialog] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -59,6 +62,21 @@ export default function AdminActivities() {
   const { data: paths = [] } = useQuery({
     queryKey: ['paths'],
     queryFn: () => base44.entities.ActivityPath.list('order'),
+  });
+
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => base44.entities.User.list(),
+  });
+
+  const { data: departments = [] } = useQuery({
+    queryKey: ['departments'],
+    queryFn: () => base44.entities.Department.list(),
+  });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
   });
 
   const createMutation = useMutation({
@@ -83,6 +101,49 @@ export default function AdminActivities() {
     mutationFn: (id) => base44.entities.Activity.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries(['activities']);
+    },
+  });
+
+  const bulkCompleteMutation = useMutation({
+    mutationFn: async ({ activityIds, targetUsers }) => {
+      const completions = [];
+      const userUpdates = [];
+
+      for (const activity of activities.filter(a => activityIds.includes(a.id))) {
+        for (const targetUser of targetUsers) {
+          completions.push({
+            activity_id: activity.id,
+            user_email: targetUser.email,
+            status: 'completed',
+            xp_earned: activity.xp_value,
+            completed_at: new Date().toISOString()
+          });
+
+          const newTotalXP = (targetUser.total_xp || 0) + activity.xp_value;
+          const newLevel = Math.floor(newTotalXP / 500) + 1;
+          userUpdates.push({
+            id: targetUser.id,
+            total_xp: newTotalXP,
+            level: newLevel
+          });
+        }
+      }
+
+      await base44.entities.ActivityCompletion.bulkCreate(completions);
+
+      for (const update of userUpdates) {
+        await base44.entities.User.update(update.id, {
+          total_xp: update.total_xp,
+          level: update.level
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['completions']);
+      queryClient.invalidateQueries(['users']);
+      setShowBulkDialog(false);
+      setSelectedActivities([]);
+      alert('Activities marked complete successfully!');
     },
   });
 
@@ -159,6 +220,21 @@ export default function AdminActivities() {
     }
   };
 
+  const toggleActivitySelection = (activityId) => {
+    setSelectedActivities(prev => 
+      prev.includes(activityId) 
+        ? prev.filter(id => id !== activityId)
+        : [...prev, activityId]
+    );
+  };
+
+  const handleBulkComplete = (targetUsers) => {
+    bulkCompleteMutation.mutate({
+      activityIds: selectedActivities,
+      targetUsers
+    });
+  };
+
   if (!user || user.role !== 'admin') return null;
 
   return (
@@ -193,9 +269,16 @@ export default function AdminActivities() {
         <div className="space-y-3">
           {activities.map((activity) => {
             const Icon = activityIcons[activity.activity_type];
+            const isSelected = selectedActivities.includes(activity.id);
             return (
-              <Card key={activity.id} className="bg-slate-900 border-slate-700 p-5">
+              <Card key={activity.id} className={`bg-slate-900 border-slate-700 p-5 transition-all ${isSelected ? 'ring-2 ring-cyan-500' : ''}`}>
                 <div className="flex items-start gap-4">
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleActivitySelection(activity.id)}
+                    className="mt-4 w-5 h-5 rounded border-slate-700 text-cyan-500 focus:ring-cyan-500 cursor-pointer"
+                  />
                   <div className="p-3 bg-slate-800 rounded-lg border border-slate-700">
                     <Icon className="w-6 h-6 text-cyan-400" />
                   </div>
@@ -397,6 +480,36 @@ export default function AdminActivities() {
             </div>
           </DialogContent>
         </Dialog>
+
+        <BulkCompletionDialog
+          open={showBulkDialog}
+          onClose={() => setShowBulkDialog(false)}
+          onConfirm={handleBulkComplete}
+          selectedActivities={selectedActivities}
+          users={allUsers}
+          departments={departments}
+          teams={teams}
+        />
+
+        {selectedActivities.length > 0 && (
+          <div className="fixed bottom-6 right-6 bg-cyan-500 text-white rounded-full shadow-lg p-4 flex items-center gap-3">
+            <span className="font-bold">{selectedActivities.length} selected</span>
+            <Button
+              onClick={() => setShowBulkDialog(true)}
+              className="bg-white text-cyan-600 hover:bg-slate-100"
+            >
+              <CheckCircle2 className="w-4 h-4 mr-2" />
+              Mark Complete
+            </Button>
+            <Button
+              onClick={() => setSelectedActivities([])}
+              variant="ghost"
+              className="text-white hover:bg-cyan-600"
+            >
+              Clear
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
