@@ -86,9 +86,9 @@ export default function Leaderboard() {
     // Filter by team/department
     let filteredUsers = users;
     if (teamFilter !== 'all') {
-      filteredUsers = users.filter(u => u.team_id === teamFilter);
+      filteredUsers = users.filter(u => (u.data?.team_id || u.team_id) === teamFilter);
     } else if (deptFilter !== 'all') {
-      filteredUsers = users.filter(u => u.department_id === deptFilter);
+      filteredUsers = users.filter(u => (u.data?.department_id || u.department_id) === deptFilter);
     }
 
     const userXP = {};
@@ -105,11 +105,11 @@ export default function Leaderboard() {
       }))
       .sort((a, b) => {
         if (timeFilter === 'all') {
-          return (b.total_xp || 0) - (a.total_xp || 0);
+          return ((b.data?.total_xp || b.total_xp) || 0) - ((a.data?.total_xp || a.total_xp) || 0);
         }
         return b.period_xp - a.period_xp;
       })
-      .filter(u => timeFilter === 'all' ? (u.total_xp || 0) > 0 : u.period_xp > 0);
+      .filter(u => timeFilter === 'all' ? ((u.data?.total_xp || u.total_xp) || 0) > 0 : u.period_xp > 0);
   };
 
   const rankedUsers = getFilteredUsers();
@@ -131,7 +131,7 @@ export default function Leaderboard() {
     }
 
     return filteredTeams.map(team => {
-      const teamMembers = users.filter(u => u.team_id === team.id);
+      const teamMembers = users.filter(u => (u.data?.team_id || u.team_id) === team.id);
       const teamMemberEmails = teamMembers.map(u => u.email);
       
       const teamCompletions = filteredCompletions.filter(c => 
@@ -157,7 +157,7 @@ export default function Leaderboard() {
   const getTopPerformerInfo = () => {
     if (rankedUsers.length === 0) return null;
     const topUser = rankedUsers[0];
-    const xp = timeFilter === 'all' ? topUser.total_xp : topUser.period_xp;
+    const xp = timeFilter === 'all' ? (topUser.data?.total_xp || topUser.total_xp) : topUser.period_xp;
     return { user: topUser, xp };
   };
 
@@ -222,13 +222,13 @@ export default function Leaderboard() {
                     <div className="flex items-center gap-3">
                       <div 
                         className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold border-2 border-yellow-400"
-                        style={{ backgroundColor: topPerformer.user.avatar_color || '#06b6d4' }}
+                        style={{ backgroundColor: topPerformer.user.data?.avatar_color || topPerformer.user.avatar_color || '#06b6d4' }}
                       >
                         {topPerformer.user.full_name?.charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <h3 className="text-xl font-bold text-white">{topPerformer.user.full_name}</h3>
-                        <p className="text-sm text-slate-300">Level {topPerformer.user.level || 1}</p>
+                        <p className="text-sm text-slate-300">Level {topPerformer.user.data?.level || topPerformer.user.level || 1}</p>
                       </div>
                     </div>
                   </div>
@@ -315,11 +315,11 @@ export default function Leaderboard() {
                 <div>
                   <Label className="text-slate-300 text-sm mb-2 block">Quick Filters</Label>
                   <div className="flex gap-2">
-                    {user.team_id && (
+                    {(user.data?.team_id || user.team_id) && (
                       <Button
                         size="sm"
                         onClick={() => {
-                          setTeamFilter(user.team_id);
+                          setTeamFilter(user.data?.team_id || user.team_id);
                           setDeptFilter('all');
                         }}
                         variant="outline"
@@ -328,11 +328,11 @@ export default function Leaderboard() {
                         My Team
                       </Button>
                     )}
-                    {user.department_id && (
+                    {(user.data?.department_id || user.department_id) && (
                       <Button
                         size="sm"
                         onClick={() => {
-                          setDeptFilter(user.department_id);
+                          setDeptFilter(user.data?.department_id || user.department_id);
                           setTeamFilter('all');
                         }}
                         variant="outline"
@@ -453,7 +453,7 @@ export default function Leaderboard() {
                     <div 
                       className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl border-2"
                       style={{ 
-                        backgroundColor: user.avatar_color || '#06b6d4',
+                        backgroundColor: user.data?.avatar_color || user.avatar_color || '#06b6d4',
                         borderColor: index < 3 ? '#fff' : '#475569'
                       }}
                     >
@@ -467,20 +467,20 @@ export default function Leaderboard() {
                         {index === 1 && <Star className="w-5 h-5 text-slate-300" />}
                         {index === 2 && <TrendingUp className="w-5 h-5 text-orange-400" />}
                       </div>
-                      <p className="text-sm text-slate-400">Level {user.level || 1}</p>
-                      {(user.team_id || user.department_id) && (
+                      <p className="text-sm text-slate-400">Level {user.data?.level || user.level || 1}</p>
+                      {((user.data?.team_id || user.team_id) || (user.data?.department_id || user.department_id)) && (
                         <div className="flex gap-1 mt-1">
-                          {user.team_id && (
+                          {(user.data?.team_id || user.team_id) && (
                             <span className="text-xs text-purple-400">
-                              {teams.find(t => t.id === user.team_id)?.name}
+                              {teams.find(t => t.id === (user.data?.team_id || user.team_id))?.name}
                             </span>
                           )}
-                          {user.team_id && user.department_id && (
+                          {(user.data?.team_id || user.team_id) && (user.data?.department_id || user.department_id) && (
                             <span className="text-xs text-slate-500">•</span>
                           )}
-                          {user.department_id && (
+                          {(user.data?.department_id || user.department_id) && (
                             <span className="text-xs text-orange-400">
-                              {departments.find(d => d.id === user.department_id)?.name}
+                              {departments.find(d => d.id === (user.data?.department_id || user.department_id))?.name}
                             </span>
                           )}
                         </div>
@@ -492,7 +492,7 @@ export default function Leaderboard() {
                         <Zap className="w-5 h-5 text-cyan-400" />
                         <span className="text-2xl font-bold text-cyan-400">
                           {timeFilter === 'all' 
-                            ? (user.total_xp || 0).toLocaleString()
+                            ? ((user.data?.total_xp || user.total_xp) || 0).toLocaleString()
                             : user.period_xp.toLocaleString()
                           }
                         </span>
