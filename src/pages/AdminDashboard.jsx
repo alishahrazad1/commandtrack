@@ -22,7 +22,7 @@ import AnalyticsExport from "../components/analytics/AnalyticsExport";
 
 export default function AdminDashboard() {
   const [user, setUser] = useState(null);
-  const [filters, setFilters] = useState({ department: 'all', team: 'all' });
+  const [filters, setFilters] = useState({ department: 'all', team: 'all', path: 'all' });
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [editValues, setEditValues] = useState({ department: '', team: '' });
@@ -108,7 +108,16 @@ export default function AdminDashboard() {
   });
 
   const filteredUserEmails = filteredUsers.map(u => u.email);
-  const filteredCompletions = completions.filter(c => filteredUserEmails.includes(c.user_email));
+  let filteredCompletions = completions.filter(c => filteredUserEmails.includes(c.user_email));
+
+  // Apply path filter to completions
+  if (filters.path !== 'all') {
+    const selectedPath = paths.find(p => p.id === filters.path);
+    if (selectedPath) {
+      const pathActivityIds = activities.filter(a => a.path_id === selectedPath.id).map(a => a.id);
+      filteredCompletions = filteredCompletions.filter(c => pathActivityIds.includes(c.activity_id));
+    }
+  }
 
   const totalUsers = filteredUsers.length;
   const activeUsers = filteredUsers.filter(u => (u.total_xp || 0) > 0).length;
@@ -254,7 +263,7 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
-        <FilterPanel filters={filters} onFilterChange={setFilters} users={users} departments={departments} teams={teams} />
+        <FilterPanel filters={filters} onFilterChange={setFilters} users={users} departments={departments} teams={teams} paths={paths} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
