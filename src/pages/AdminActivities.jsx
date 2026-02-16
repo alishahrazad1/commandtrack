@@ -16,7 +16,8 @@ const activityIcons = {
   training_module: BookOpen,
   roleplay: Users,
   manager_checkin: MessageSquare,
-  call_agenda_upload: Upload
+  call_agenda_upload: Upload,
+  microlearning_video: Video
 };
 
 export default function AdminActivities() {
@@ -28,6 +29,7 @@ export default function AdminActivities() {
     description: '',
     activity_type: 'training_module',
     xp_value: 100,
+    video_url: '',
     scoring_criteria: '',
     order: 0,
     is_active: true,
@@ -36,6 +38,7 @@ export default function AdminActivities() {
     path_id: '',
     path_order: 0
   });
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -89,6 +92,7 @@ export default function AdminActivities() {
       description: '',
       activity_type: 'training_module',
       xp_value: 100,
+      video_url: '',
       scoring_criteria: '',
       order: 0,
       is_active: true,
@@ -98,6 +102,27 @@ export default function AdminActivities() {
       path_order: 0
     });
     setEditingActivity(null);
+  };
+
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > 50) {
+      alert('Video must be less than 50MB (approximately 5 minutes)');
+      return;
+    }
+
+    setUploadingVideo(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData({ ...formData, video_url: file_url });
+    } catch (error) {
+      alert('Failed to upload video');
+    } finally {
+      setUploadingVideo(false);
+    }
   };
 
   const handleEdit = (activity) => {
@@ -252,9 +277,29 @@ export default function AdminActivities() {
                       <SelectItem value="roleplay">Roleplay</SelectItem>
                       <SelectItem value="manager_checkin">Manager Check-in</SelectItem>
                       <SelectItem value="call_agenda_upload">Call Agenda Upload</SelectItem>
+                      <SelectItem value="microlearning_video">Microlearning Video</SelectItem>
                     </SelectContent>
-                  </Select>
-                </div>
+                    </Select>
+                    </div>
+
+                    {formData.activity_type === 'microlearning_video' && (
+                    <div>
+                    <Label className="text-slate-300">Video Upload (Max 5 min / 50MB)</Label>
+                    <Input
+                      type="file"
+                      accept="video/*"
+                      onChange={handleVideoUpload}
+                      disabled={uploadingVideo}
+                      className="bg-slate-800 border-slate-700 text-white mt-2"
+                    />
+                    {uploadingVideo && (
+                      <p className="text-xs text-cyan-400 mt-2">Uploading video...</p>
+                    )}
+                    {formData.video_url && (
+                      <p className="text-xs text-green-400 mt-2">✓ Video uploaded</p>
+                    )}
+                    </div>
+                    )}
 
                 <div>
                   <Label className="text-slate-300">XP Value</Label>

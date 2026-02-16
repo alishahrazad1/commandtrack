@@ -2,7 +2,7 @@ import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, Upload, Users, BookOpen, MessageSquare, Zap, Lock, Clock } from "lucide-react";
+import { CheckCircle2, Circle, Upload, Users, BookOpen, MessageSquare, Zap, Lock, Clock, Video } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
@@ -10,17 +10,19 @@ const activityIcons = {
   training_module: BookOpen,
   roleplay: Users,
   manager_checkin: MessageSquare,
-  call_agenda_upload: Upload
+  call_agenda_upload: Upload,
+  microlearning_video: Video
 };
 
 const activityColors = {
   training_module: "text-cyan-400",
   roleplay: "text-magenta-400",
   manager_checkin: "text-orange-400",
-  call_agenda_upload: "text-purple-400"
+  call_agenda_upload: "text-purple-400",
+  microlearning_video: "text-green-400"
 };
 
-export default function ActivityCard({ activity, completion, onComplete, onUpload, isLocked = false }) {
+export default function ActivityCard({ activity, completion, onComplete, onUpload, onWatchVideo, isLocked = false }) {
   const isCompleted = completion?.status === 'completed';
   const Icon = activityIcons[activity.activity_type] || Circle;
   const colorClass = activityColors[activity.activity_type] || "text-slate-400";
@@ -127,6 +129,14 @@ export default function ActivityCard({ activity, completion, onComplete, onUploa
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       Upload & Score
+                    </Button>
+                  ) : isAvailable && activity.activity_type === 'microlearning_video' ? (
+                    <Button 
+                      onClick={() => onWatchVideo(activity)}
+                      className="bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
+                    >
+                      <Video className="w-4 h-4 mr-2" />
+                      Watch Video
                     </Button>
                   ) : isAvailable ? (
                     <Button 

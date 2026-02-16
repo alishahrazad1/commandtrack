@@ -9,6 +9,7 @@ import XPCard from "../components/dashboard/XPCard";
 import ProgressOverview from "../components/dashboard/ProgressOverview";
 import ActivityCard from "../components/dashboard/ActivityCard";
 import UploadDialog from "../components/UploadDialog";
+import VideoPlayer from "../components/VideoPlayer";
 import BadgeCard from "../components/badges/BadgeCard";
 import PathProgress from "../components/paths/PathProgress";
 import { motion } from "framer-motion";
@@ -16,6 +17,7 @@ import { motion } from "framer-motion";
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [uploadActivity, setUploadActivity] = useState(null);
+  const [videoActivity, setVideoActivity] = useState(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -320,6 +322,7 @@ export default function Dashboard() {
                       completion={getActivityCompletion(activity)}
                       onComplete={(act) => completeActivityMutation.mutate(act)}
                       onUpload={(act) => setUploadActivity(act)}
+                      onWatchVideo={(act) => setVideoActivity(act)}
                       isLocked={!isActivityUnlocked(activity)}
                     />
                   </motion.div>
@@ -352,6 +355,7 @@ export default function Dashboard() {
                     completion={getActivityCompletion(activity)}
                     onComplete={(act) => completeActivityMutation.mutate(act)}
                     onUpload={(act) => setUploadActivity(act)}
+                    onWatchVideo={(act) => setVideoActivity(act)}
                   />
                 </motion.div>
               ))}
@@ -369,6 +373,16 @@ export default function Dashboard() {
           base44.auth.me().then(setUser);
         }}
       />
-    </div>
-  );
-}
+
+      <VideoPlayer
+        activity={videoActivity}
+        open={!!videoActivity}
+        onClose={() => setVideoActivity(null)}
+        onComplete={(act) => {
+          completeActivityMutation.mutate(act);
+          setVideoActivity(null);
+        }}
+      />
+      </div>
+      );
+      }
