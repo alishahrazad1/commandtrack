@@ -21,23 +21,31 @@ export default function UploadDialog({ activity, open, onClose, onSuccess }) {
       // Upload file
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
-      // Score the call agenda using AI
-      const scoringPrompt = `You are evaluating a sales call agenda for Force Management's Command of the Message training. 
-      
-Scoring Criteria:
-${activity.scoring_criteria || `
-- Clear objective and desired outcome
-- Proper discovery questions
-- Value proposition alignment
-- Competitive differentiation
-- Strong call to action
-`}
+      // Score the call agenda using AI with coaching
+      const scoringPrompt = `You are an expert sales coach evaluating a call agenda for Force Management's Command of the Message training. 
 
-Analyze the uploaded document and provide:
-1. A score from 0-100
-2. Brief feedback on strengths and areas for improvement
+      Scoring Criteria:
+      ${activity.scoring_criteria || `
+      - Clear objective and desired outcome
+      - Proper discovery questions aligned to customer's business issues
+      - Value proposition that differentiates from competition
+      - Competitive differentiation messaging
+      - Strong, specific call to action with next steps
+      `}
 
-Be constructive and specific in your feedback.`;
+      Provide a comprehensive coaching evaluation:
+
+      1. SCORE (0-100): Rate the overall quality
+
+      2. STRENGTHS: Identify 2-3 specific things done well with examples from the submission
+
+      3. AREAS FOR IMPROVEMENT: Provide 3-4 actionable, specific recommendations for enhancement
+
+      4. COACHING TIPS: Share 2-3 best practices or examples of what a great agenda includes for Command of the Message (e.g., "Start with a compelling business issue: 'I noticed companies in your industry struggle with X, which costs Y...'")
+
+      5. NEXT STEPS: Suggest 1-2 immediate actions they can take to improve their next agenda
+
+      Be specific, actionable, and encouraging. Reference actual content from their submission when giving feedback.`;
 
       const aiResponse = await base44.integrations.Core.InvokeLLM({
         prompt: scoringPrompt,
@@ -46,13 +54,19 @@ Be constructive and specific in your feedback.`;
           type: "object",
           properties: {
             score: { type: "number" },
-            feedback: { type: "string" }
+            strengths: { type: "string" },
+            areas_for_improvement: { type: "string" },
+            coaching_tips: { type: "string" },
+            next_steps: { type: "string" }
           }
         }
       });
 
       const score = Math.min(100, Math.max(0, aiResponse.score));
       const xpEarned = Math.round(activity.xp_value * (score / 100));
+
+      // Compile comprehensive feedback
+      const fullFeedback = `STRENGTHS:\n${aiResponse.strengths}\n\nAREAS FOR IMPROVEMENT:\n${aiResponse.areas_for_improvement}\n\nCOACHING TIPS:\n${aiResponse.coaching_tips}\n\nNEXT STEPS:\n${aiResponse.next_steps}`;
 
       // Get current user
       const user = await base44.auth.me();
@@ -63,7 +77,7 @@ Be constructive and specific in your feedback.`;
         user_email: user.email,
         status: 'completed',
         score: score,
-        notes: aiResponse.feedback,
+        notes: fullFeedback,
         file_url: file_url,
         xp_earned: xpEarned,
         completed_at: new Date().toISOString()
@@ -77,7 +91,14 @@ Be constructive and specific in your feedback.`;
         level: newLevel
       });
 
-      setResult({ score, feedback: aiResponse.feedback, xpEarned });
+      setResult({ 
+        score, 
+        strengths: aiResponse.strengths,
+        areas_for_improvement: aiResponse.areas_for_improvement,
+        coaching_tips: aiResponse.coaching_tips,
+        next_steps: aiResponse.next_steps,
+        xpEarned 
+      });
     } catch (error) {
       console.error('Error processing upload:', error);
       alert('Failed to process upload. Please try again.');
@@ -157,9 +178,26 @@ Be constructive and specific in your feedback.`;
               <p className="text-xl font-bold text-orange-400">+{result.xpEarned} XP Earned!</p>
             </div>
 
-            <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
-              <h4 className="font-semibold text-cyan-400 mb-2">AI Feedback:</h4>
-              <p className="text-slate-300 text-sm">{result.feedback}</p>
+            <div className="space-y-4">
+              <div className="bg-green-900/30 rounded-lg p-4 border border-green-500/30">
+                <h4 className="font-semibold text-green-400 mb-2">💪 Strengths</h4>
+                <p className="text-slate-300 text-sm whitespace-pre-line">{result.strengths}</p>
+              </div>
+
+              <div className="bg-orange-900/30 rounded-lg p-4 border border-orange-500/30">
+                <h4 className="font-semibold text-orange-400 mb-2">🎯 Areas for Improvement</h4>
+                <p className="text-slate-300 text-sm whitespace-pre-line">{result.areas_for_improvement}</p>
+              </div>
+
+              <div className="bg-cyan-900/30 rounded-lg p-4 border border-cyan-500/30">
+                <h4 className="font-semibold text-cyan-400 mb-2">🏆 Coaching Tips</h4>
+                <p className="text-slate-300 text-sm whitespace-pre-line">{result.coaching_tips}</p>
+              </div>
+
+              <div className="bg-purple-900/30 rounded-lg p-4 border border-purple-500/30">
+                <h4 className="font-semibold text-purple-400 mb-2">⚡ Next Steps</h4>
+                <p className="text-slate-300 text-sm whitespace-pre-line">{result.next_steps}</p>
+              </div>
             </div>
 
             <Button
