@@ -4,7 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Trophy, Star, TrendingUp } from "lucide-react";
+import { ArrowLeft, Trophy, Star, TrendingUp, Target } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
 import BadgeCard from "../components/badges/BadgeCard";
@@ -44,6 +46,16 @@ export default function Profile() {
     enabled: !!user,
   });
 
+  const { data: allPaths = [] } = useQuery({
+    queryKey: ['paths'],
+    queryFn: () => base44.entities.ActivityPath.filter({ is_active: true }),
+  });
+
+  const { data: activities = [] } = useQuery({
+    queryKey: ['activities'],
+    queryFn: () => base44.entities.Activity.list(),
+  });
+
   if (!user) return null;
 
   const completedCount = completions.filter(c => c.status === 'completed').length;
@@ -53,6 +65,21 @@ export default function Profile() {
 
   const earnedBadges = badges.filter(b => userBadges.some(ub => ub.badge_id === b.id));
   const unearnedBadges = badges.filter(b => !userBadges.some(ub => ub.badge_id === b.id));
+
+  const assignedPaths = allPaths.filter(path => {
+    if (!path.department_id && !path.team_id) return true;
+    if (path.team_id && user.team_id === path.team_id) return true;
+    if (path.department_id && user.department_id === path.department_id && !path.team_id) return true;
+    return false;
+  });
+
+  const getPathProgress = (pathId) => {
+    const pathActivities = activities.filter(a => a.path_id === pathId);
+    const completed = pathActivities.filter(a => 
+      completions.some(c => c.activity_id === a.id && c.status === 'completed')
+    ).length;
+    return { total: pathActivities.length, completed };
+  };
 
   const getProgress = (badge) => {
     switch (badge.criteria_type) {
@@ -157,6 +184,66 @@ export default function Profile() {
             </Card>
           </motion.div>
         </div>
+
+        {assignedPaths.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="bg-slate-900 border-slate-700 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <Target className="w-6 h-6 text-cyan-400" />
+                <h2 className="text-2xl font-bold text-white">YOUR LEARNING PATHS</h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {assignedPaths.map(path => {
+                  const progress = getPathProgress(path.id);
+                  const percentage = progress.total > 0 ? Math.round((progress.completed / progress.total) * 100) : 0;
+                  const dept = departments.find(d => d.id === path.department_id);
+                  const team = teams.find(t => t.id === path.team_id);
+
+                  return (
+                    <Card key={path.id} className="bg-slate-800 border-slate-700 p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-bold text-white">{path.name}</h3>
+                          <p className="text-sm text-slate-400 mt-1">{path.description}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-cyan-400">{percentage}%</p>
+                        </div>
+                      </div>
+
+                      <Progress value={percentage} className="mb-3 h-2" />
+
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-400">
+                          {progress.completed} of {progress.total} completed
+                        </span>
+                        {(dept || team) && (
+                          <div className="flex gap-2">
+                            {team && (
+                              <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-xs">
+                                {team.name}
+                              </Badge>
+                            )}
+                            {dept && !team && (
+                              <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-xs">
+                                {dept.name}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </Card>
+          </motion.div>
+        )}
 
         <Card className="bg-slate-900 border-slate-700 p-6">
           <div className="flex items-center gap-3 mb-6">
