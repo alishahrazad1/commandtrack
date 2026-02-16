@@ -57,6 +57,9 @@ import Dashboard from './pages/Dashboard';
 import Leaderboard from './pages/Leaderboard';
 import Profile from './pages/Profile';
 import TeamLeadDashboard from './pages/TeamLeadDashboard';
+import Notifications from './pages/Notifications';
+import NotificationSettings from './pages/NotificationSettings';
+import AdminAnnouncements from './pages/AdminAnnouncements';
 
 
 export const PAGES = {
@@ -70,6 +73,9 @@ export const PAGES = {
     "Leaderboard": Leaderboard,
     "Profile": Profile,
     "TeamLeadDashboard": TeamLeadDashboard,
+    "Notifications": Notifications,
+    "NotificationSettings": NotificationSettings,
+    "AdminAnnouncements": AdminAnnouncements,
 }
 
 export const pagesConfig = {
