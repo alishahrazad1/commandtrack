@@ -22,6 +22,7 @@ export default function AdminOrganization() {
   const [editingDept, setEditingDept] = useState(null);
   const [editingTeam, setEditingTeam] = useState(null);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [showBulkUploadDialog, setShowBulkUploadDialog] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('user');
   const [inviteTeamId, setInviteTeamId] = useState('');
@@ -365,13 +366,23 @@ export default function AdminOrganization() {
                   <Users className="w-5 h-5" />
                   All Users
                 </h2>
-                <Button
-                  onClick={() => setShowInviteDialog(true)}
-                  className="bg-green-500 hover:bg-green-600"
-                >
-                  <Mail className="w-4 h-4 mr-2" />
-                  Invite New User
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setShowBulkUploadDialog(true)}
+                    variant="outline"
+                    className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Bulk Upload
+                  </Button>
+                  <Button
+                    onClick={() => setShowInviteDialog(true)}
+                    className="bg-green-500 hover:bg-green-600"
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Invite New User
+                  </Button>
+                </div>
               </div>
 
               <div className="overflow-x-auto">
