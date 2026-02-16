@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
-import { Users, Target, TrendingUp, Settings, BarChart3, Download, Eye } from "lucide-react";
+import { Users, Target, TrendingUp, Settings, BarChart3, Download, Eye, Edit2, Check, X } from "lucide-react";
 import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
 import FilterPanel from "../components/admin/FilterPanel";
@@ -17,6 +18,10 @@ export default function AdminDashboard() {
   const [user, setUser] = useState(null);
   const [filters, setFilters] = useState({ department: 'all', team: 'all' });
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editValues, setEditValues] = useState({ department: '', team: '' });
+  
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -41,6 +46,30 @@ export default function AdminDashboard() {
     queryKey: ['completions'],
     queryFn: () => base44.entities.ActivityCompletion.list(),
   });
+
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ userId, data }) => {
+      await base44.entities.User.update(userId, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['users']);
+      setEditingUser(null);
+    },
+  });
+
+  const handleEditUser = (u) => {
+    setEditingUser(u.id);
+    setEditValues({ department: u.department || '', team: u.team || '' });
+  };
+
+  const handleSaveUser = (userId) => {
+    updateUserMutation.mutate({ userId, data: editValues });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUser(null);
+    setEditValues({ department: '', team: '' });
+  };
 
   if (!user || user.role !== 'admin') return null;
 
@@ -251,22 +280,73 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex-1">
                           <p className="font-semibold text-white">{u.full_name}</p>
-                          <p className="text-sm text-slate-400">
-                            {[u.department, u.team, u.email].filter(Boolean).join(' • ')}
-                          </p>
+                          {editingUser === u.id ? (
+                            <div className="flex gap-2 mt-1">
+                              <input
+                                type="text"
+                                value={editValues.department}
+                                onChange={(e) => setEditValues({ ...editValues, department: e.target.value })}
+                                placeholder="Department"
+                                className="px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs text-white w-32"
+                              />
+                              <input
+                                type="text"
+                                value={editValues.team}
+                                onChange={(e) => setEditValues({ ...editValues, team: e.target.value })}
+                                placeholder="Team"
+                                className="px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs text-white w-32"
+                              />
+                            </div>
+                          ) : (
+                            <p className="text-sm text-slate-400">
+                              {[u.department, u.team, u.email].filter(Boolean).join(' • ')}
+                            </p>
+                          )}
                         </div>
                         <div className="text-right mr-4">
                           <p className="font-bold text-cyan-400">{(u.total_xp || 0).toLocaleString()} XP</p>
                           <p className="text-xs text-slate-400">{completed}/{totalActivities} • {userCompletion}%</p>
                         </div>
-                        <Button
-                          onClick={() => setSelectedEmployee(u)}
-                          size="sm"
-                          className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30"
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          View Report
-                        </Button>
+                        <div className="flex gap-2">
+                          {editingUser === u.id ? (
+                            <>
+                              <Button
+                                onClick={() => handleSaveUser(u.id)}
+                                size="sm"
+                                className="bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
+                              >
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                onClick={handleCancelEdit}
+                                size="sm"
+                                variant="ghost"
+                                className="text-slate-400 hover:text-white"
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                onClick={() => handleEditUser(u)}
+                                size="sm"
+                                variant="ghost"
+                                className="text-slate-400 hover:text-cyan-400"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                onClick={() => setSelectedEmployee(u)}
+                                size="sm"
+                                className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30"
+                              >
+                                <Eye className="w-4 h-4 mr-2" />
+                                View Report
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
