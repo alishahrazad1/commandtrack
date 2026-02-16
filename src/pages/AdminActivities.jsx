@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Plus, Pencil, Trash2, BookOpen, Users, MessageSquare, Upload } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, BookOpen, Users, MessageSquare, Upload, Video } from "lucide-react";
 import { createPageUrl } from "../utils";
 
 const activityIcons = {
@@ -132,6 +132,7 @@ export default function AdminActivities() {
       description: activity.description,
       activity_type: activity.activity_type,
       xp_value: activity.xp_value,
+      video_url: activity.video_url || '',
       scoring_criteria: activity.scoring_criteria || '',
       order: activity.order,
       is_active: activity.is_active,
@@ -279,27 +280,8 @@ export default function AdminActivities() {
                       <SelectItem value="call_agenda_upload">Call Agenda Upload</SelectItem>
                       <SelectItem value="microlearning_video">Microlearning Video</SelectItem>
                     </SelectContent>
-                    </Select>
-                    </div>
-
-                    {formData.activity_type === 'microlearning_video' && (
-                    <div>
-                    <Label className="text-slate-300">Video Upload (Max 5 min / 50MB)</Label>
-                    <Input
-                      type="file"
-                      accept="video/*"
-                      onChange={handleVideoUpload}
-                      disabled={uploadingVideo}
-                      className="bg-slate-800 border-slate-700 text-white mt-2"
-                    />
-                    {uploadingVideo && (
-                      <p className="text-xs text-cyan-400 mt-2">Uploading video...</p>
-                    )}
-                    {formData.video_url && (
-                      <p className="text-xs text-green-400 mt-2">✓ Video uploaded</p>
-                    )}
-                    </div>
-                    )}
+                  </Select>
+                </div>
 
                 <div>
                   <Label className="text-slate-300">XP Value</Label>
@@ -311,6 +293,25 @@ export default function AdminActivities() {
                   />
                 </div>
               </div>
+
+              {formData.activity_type === 'microlearning_video' && (
+                <div>
+                  <Label className="text-slate-300">Video Upload (Max 5 min / 50MB)</Label>
+                  <Input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoUpload}
+                    disabled={uploadingVideo}
+                    className="bg-slate-800 border-slate-700 text-white mt-2"
+                  />
+                  {uploadingVideo && (
+                    <p className="text-xs text-cyan-400 mt-2">Uploading video...</p>
+                  )}
+                  {formData.video_url && (
+                    <p className="text-xs text-green-400 mt-2">✓ Video uploaded</p>
+                  )}
+                </div>
+              )}
 
               {formData.activity_type === 'call_agenda_upload' && (
                 <div>
