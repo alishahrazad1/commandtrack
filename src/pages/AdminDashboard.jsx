@@ -212,16 +212,10 @@ export default function AdminDashboard() {
               <Download className="w-4 h-4 mr-2" />
               Export Report
             </Button>
-            <Link to={createPageUrl('AdminTeams')}>
-              <Button className="bg-orange-500 hover:bg-orange-600">
-                <Users className="w-4 h-4 mr-2" />
-                Teams
-              </Button>
-            </Link>
             <Link to={createPageUrl('AdminOrganization')}>
               <Button className="bg-slate-500 hover:bg-slate-600">
                 <Building2 className="w-4 h-4 mr-2" />
-                Org Setup
+                Organization
               </Button>
             </Link>
             <Link to={createPageUrl('AdminPaths')}>
