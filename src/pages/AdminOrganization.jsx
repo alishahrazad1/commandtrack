@@ -124,6 +124,14 @@ export default function AdminOrganization() {
     },
   });
 
+  const deleteUserMutation = useMutation({
+    mutationFn: (userId) => base44.entities.User.delete(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['users']);
+      toast.success('User removed successfully');
+    },
+  });
+
   const handleInviteUser = async () => {
     if (!inviteEmail) {
       toast.error('Please enter an email address');
@@ -397,6 +405,7 @@ export default function AdminOrganization() {
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">Team</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">XP</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">Level</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -419,9 +428,25 @@ export default function AdminOrganization() {
                           </td>
                           <td className="py-3 px-4 text-sm text-slate-400">{u.email}</td>
                           <td className="py-3 px-4">
-                            <Badge className={u.role === 'admin' ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'}>
-                              {u.role}
-                            </Badge>
+                            <Select
+                              value={u.role}
+                              onValueChange={(value) => {
+                                updateUserMutation.mutate({
+                                  userId: u.id,
+                                  data: { role: value }
+                                });
+                              }}
+                            >
+                              <SelectTrigger className="bg-slate-800 border-slate-700 text-white h-8 w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-slate-800 border-slate-700">
+                                <SelectItem value="user">User</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="team_lead">Team Lead</SelectItem>
+                                <SelectItem value="department_head">Department Head</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </td>
                           <td className="py-3 px-4 text-sm text-slate-400">
                             {userDept?.name || '-'}
@@ -458,10 +483,24 @@ export default function AdminOrganization() {
                           <td className="py-3 px-4 text-sm text-slate-400">
                             {u.level || 1}
                           </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
+                          <td className="py-3 px-4">
+                            <Button
+                              onClick={() => {
+                                if (confirm(`Remove ${u.full_name} from the system?`)) {
+                                  deleteUserMutation.mutate(u.id);
+                                }
+                              }}
+                              size="sm"
+                              variant="ghost"
+                              className="text-slate-400 hover:text-red-400"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </td>
+                          </tr>
+                          );
+                          })}
+                          </tbody>
                 </table>
               </div>
             </Card>
