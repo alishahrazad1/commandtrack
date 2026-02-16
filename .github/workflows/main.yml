@@ -1,0 +1,24 @@
+name: Run Gosec
+
+on:
+  push:
+    branches:
+      - master
+      # Add other branches you want to scan
+  pull_request:
+    branches:
+      - master
+      # Add other branches you want to scan
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v2
+
+      - name: Run Gosec Security Scanner
+        # You can use an action like 'securego/gosec@master' or 'cosmos/gosec@master'
+        uses: securego/gosec@master 
+        with:
+          args: ./... # This tells gosec to scan all Go files in the repository
