@@ -99,7 +99,7 @@ export default function Profile() {
             transition={{ delay: 0.1 }}
           >
             <Card className="bg-gradient-to-br from-cyan-900/50 to-slate-900 border-cyan-500/30 p-6">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 mb-4">
                 <div 
                   className="w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl"
                   style={{ backgroundColor: user.avatar_color || '#06b6d4' }}
@@ -112,6 +112,22 @@ export default function Profile() {
                   <p className="text-xs text-slate-400">{user.email}</p>
                 </div>
               </div>
+              {(user.department_id || user.team_id) && (
+                <div className="border-t border-slate-700 pt-3 space-y-1">
+                  {user.department_id && (
+                    <p className="text-xs text-slate-400">
+                      <span className="text-slate-500">Department:</span>{' '}
+                      <span className="text-orange-400">{departments.find(d => d.id === user.department_id)?.name}</span>
+                    </p>
+                  )}
+                  {user.team_id && (
+                    <p className="text-xs text-slate-400">
+                      <span className="text-slate-500">Team:</span>{' '}
+                      <span className="text-purple-400">{teams.find(t => t.id === user.team_id)?.name}</span>
+                    </p>
+                  )}
+                </div>
+              )}
             </Card>
           </motion.div>
 
