@@ -79,6 +79,11 @@ export default function AdminActivities() {
     queryFn: () => base44.entities.Team.list(),
   });
 
+  const { data: allCompletions = [] } = useQuery({
+    queryKey: ['completions'],
+    queryFn: () => base44.entities.ActivityCompletion.list(),
+  });
+
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Activity.create(data),
     onSuccess: () => {
@@ -107,43 +112,58 @@ export default function AdminActivities() {
   const bulkCompleteMutation = useMutation({
     mutationFn: async ({ activityIds, targetUsers }) => {
       const completions = [];
-      const userUpdates = [];
+      const userXPMap = new Map();
 
       for (const activity of activities.filter(a => activityIds.includes(a.id))) {
         for (const targetUser of targetUsers) {
-          completions.push({
-            activity_id: activity.id,
-            user_email: targetUser.email,
-            status: 'completed',
-            xp_earned: activity.xp_value,
-            completed_at: new Date().toISOString()
-          });
+          // Check if this activity is already completed by this user
+          const alreadyCompleted = allCompletions.some(
+            c => c.activity_id === activity.id && c.user_email === targetUser.email
+          );
 
-          const newTotalXP = (targetUser.total_xp || 0) + activity.xp_value;
+          if (!alreadyCompleted) {
+            // Only create completion if it doesn't exist
+            completions.push({
+              activity_id: activity.id,
+              user_email: targetUser.email,
+              status: 'completed',
+              xp_earned: activity.xp_value,
+              completed_at: new Date().toISOString()
+            });
+
+            // Accumulate XP per user (only for new completions)
+            const currentXP = userXPMap.get(targetUser.id) || 0;
+            userXPMap.set(targetUser.id, currentXP + activity.xp_value);
+          }
+        }
+      }
+
+      // Only create completions if there are new ones
+      if (completions.length > 0) {
+        await base44.entities.ActivityCompletion.bulkCreate(completions);
+      }
+
+      // Update user XP and levels
+      for (const targetUser of targetUsers) {
+        const xpToAdd = userXPMap.get(targetUser.id);
+        if (xpToAdd) {
+          const newTotalXP = (targetUser.total_xp || 0) + xpToAdd;
           const newLevel = Math.floor(newTotalXP / 500) + 1;
-          userUpdates.push({
-            id: targetUser.id,
+          await base44.entities.User.update(targetUser.id, {
             total_xp: newTotalXP,
             level: newLevel
           });
         }
       }
 
-      await base44.entities.ActivityCompletion.bulkCreate(completions);
-
-      for (const update of userUpdates) {
-        await base44.entities.User.update(update.id, {
-          total_xp: update.total_xp,
-          level: update.level
-        });
-      }
+      return completions.length;
     },
-    onSuccess: () => {
+    onSuccess: (count) => {
       queryClient.invalidateQueries(['completions']);
       queryClient.invalidateQueries(['users']);
       setShowBulkDialog(false);
       setSelectedActivities([]);
-      alert('Activities marked complete successfully!');
+      alert(`${count} new completions created (duplicates were skipped)`);
     },
   });
 
