@@ -79,15 +79,7 @@ export default function Dashboard() {
         throw new Error('This activity has expired.');
       }
 
-      // Check if already completed
-      const alreadyCompleted = completions.some(
-        c => c.activity_id === activity.id && c.user_email === user.email
-      );
-
-      if (alreadyCompleted) {
-        throw new Error('You have already completed this activity.');
-      }
-
+      // Allow re-completion of activities
       await base44.entities.ActivityCompletion.create({
         activity_id: activity.id,
         user_email: user.email,
