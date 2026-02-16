@@ -2,8 +2,9 @@ import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, Upload, Users, BookOpen, MessageSquare, Zap } from "lucide-react";
+import { CheckCircle2, Circle, Upload, Users, BookOpen, MessageSquare, Zap, Lock, Clock } from "lucide-react";
 import { motion } from "framer-motion";
+import { format } from "date-fns";
 
 const activityIcons = {
   training_module: BookOpen,
@@ -19,10 +20,19 @@ const activityColors = {
   call_agenda_upload: "text-purple-400"
 };
 
-export default function ActivityCard({ activity, completion, onComplete, onUpload }) {
+export default function ActivityCard({ activity, completion, onComplete, onUpload, isLocked = false }) {
   const isCompleted = completion?.status === 'completed';
   const Icon = activityIcons[activity.activity_type] || Circle;
   const colorClass = activityColors[activity.activity_type] || "text-slate-400";
+
+  const now = new Date();
+  const startDate = activity.start_date ? new Date(activity.start_date) : null;
+  const endDate = activity.end_date ? new Date(activity.end_date) : null;
+  
+  const isScheduled = startDate || endDate;
+  const isUpcoming = startDate && now < startDate;
+  const isExpired = endDate && now > endDate;
+  const isAvailable = !isUpcoming && !isExpired && !isLocked;
 
   return (
     <motion.div
@@ -34,6 +44,8 @@ export default function ActivityCard({ activity, completion, onComplete, onUploa
       <Card className={`relative overflow-hidden border transition-all ${
         isCompleted 
           ? 'bg-slate-800/50 border-green-500/30' 
+          : isLocked || isUpcoming || isExpired
+          ? 'bg-slate-900/50 border-slate-700 opacity-75'
           : 'bg-slate-900 border-slate-700 hover:border-cyan-500/50'
       }`}>
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
@@ -52,9 +64,33 @@ export default function ActivityCard({ activity, completion, onComplete, onUploa
 
             <div className="flex-1">
               <div className="flex items-start justify-between mb-2">
-                <h3 className={`font-semibold ${isCompleted ? 'text-slate-400 line-through' : 'text-white'}`}>
-                  {activity.title}
-                </h3>
+                <div className="flex-1">
+                  <h3 className={`font-semibold ${isCompleted ? 'text-slate-400 line-through' : 'text-white'}`}>
+                    {activity.title}
+                  </h3>
+                  {(isLocked || isScheduled) && (
+                    <div className="flex gap-2 mt-1">
+                      {isLocked && (
+                        <Badge className="bg-slate-500/20 text-slate-400 border-slate-500/30">
+                          <Lock className="w-3 h-3 mr-1" />
+                          Locked
+                        </Badge>
+                      )}
+                      {!isLocked && isUpcoming && (
+                        <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                          <Clock className="w-3 h-3 mr-1" />
+                          Upcoming
+                        </Badge>
+                      )}
+                      {!isLocked && isExpired && (
+                        <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                          <Lock className="w-3 h-3 mr-1" />
+                          Expired
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </div>
                 <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 flex items-center gap-1">
                   <Zap className="w-3 h-3" />
                   {activity.xp_value} XP
@@ -62,6 +98,13 @@ export default function ActivityCard({ activity, completion, onComplete, onUploa
               </div>
 
               <p className="text-sm text-slate-400 mb-4">{activity.description}</p>
+
+              {isScheduled && (
+                <div className="text-xs text-slate-500 mb-3">
+                  {startDate && <div>Available: {format(startDate, 'MMM d, yyyy h:mm a')}</div>}
+                  {endDate && <div>Expires: {format(endDate, 'MMM d, yyyy h:mm a')}</div>}
+                </div>
+              )}
 
               {completion?.score && (
                 <div className="mb-3 p-3 bg-slate-800 rounded-lg border border-slate-700">
@@ -77,7 +120,7 @@ export default function ActivityCard({ activity, completion, onComplete, onUploa
 
               {!isCompleted && (
                 <div className="flex gap-2">
-                  {activity.activity_type === 'call_agenda_upload' ? (
+                  {isAvailable && activity.activity_type === 'call_agenda_upload' ? (
                     <Button 
                       onClick={() => onUpload(activity)}
                       className="bg-gradient-to-r from-cyan-500 to-magenta-500 hover:from-cyan-600 hover:to-magenta-600 text-white"
@@ -85,7 +128,7 @@ export default function ActivityCard({ activity, completion, onComplete, onUploa
                       <Upload className="w-4 h-4 mr-2" />
                       Upload & Score
                     </Button>
-                  ) : (
+                  ) : isAvailable ? (
                     <Button 
                       onClick={() => onComplete(activity)}
                       className="bg-gradient-to-r from-cyan-500 to-magenta-500 hover:from-cyan-600 hover:to-magenta-600 text-white"
@@ -93,7 +136,22 @@ export default function ActivityCard({ activity, completion, onComplete, onUploa
                       <CheckCircle2 className="w-4 h-4 mr-2" />
                       Mark Complete
                     </Button>
-                  )}
+                  ) : isLocked ? (
+                    <Button disabled className="bg-slate-700 text-slate-400 cursor-not-allowed">
+                      <Lock className="w-4 h-4 mr-2" />
+                      Complete Previous Activity
+                    </Button>
+                  ) : isUpcoming ? (
+                    <Button disabled className="bg-slate-700 text-slate-400 cursor-not-allowed">
+                      <Clock className="w-4 h-4 mr-2" />
+                      Not Available Yet
+                    </Button>
+                  ) : isExpired ? (
+                    <Button disabled className="bg-slate-700 text-slate-400 cursor-not-allowed">
+                      <Lock className="w-4 h-4 mr-2" />
+                      Activity Expired
+                    </Button>
+                  ) : null}
                 </div>
               )}
 
