@@ -29,7 +29,11 @@ export default function Leaderboard() {
 
   const { data: users = [] } = useQuery({
     queryKey: ['users'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      const result = await base44.entities.User.list();
+      console.log('Users fetched:', result.length, result);
+      return result;
+    },
   });
 
   const { data: completions = [] } = useQuery({
