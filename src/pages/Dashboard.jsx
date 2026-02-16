@@ -3,12 +3,13 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Trophy, Target } from "lucide-react";
+import { Trophy, Target, User } from "lucide-react";
 import { createPageUrl } from "../utils";
 import XPCard from "../components/dashboard/XPCard";
 import ProgressOverview from "../components/dashboard/ProgressOverview";
 import ActivityCard from "../components/dashboard/ActivityCard";
 import UploadDialog from "../components/UploadDialog";
+import BadgeCard from "../components/badges/BadgeCard";
 import { motion } from "framer-motion";
 
 export default function Dashboard() {
@@ -36,6 +37,17 @@ export default function Dashboard() {
     queryFn: () => base44.entities.User.list(),
   });
 
+  const { data: badges = [] } = useQuery({
+    queryKey: ['badges'],
+    queryFn: () => base44.entities.Badge.filter({ is_active: true }),
+  });
+
+  const { data: userBadges = [] } = useQuery({
+    queryKey: ['userBadges', user?.email],
+    queryFn: () => base44.entities.UserBadge.filter({ user_email: user.email }),
+    enabled: !!user,
+  });
+
   const completeActivityMutation = useMutation({
     mutationFn: async (activity) => {
       await base44.entities.ActivityCompletion.create({
@@ -52,12 +64,56 @@ export default function Dashboard() {
         total_xp: newTotalXP,
         level: newLevel
       });
+
+      await checkAndAwardBadges();
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['completions']);
+      queryClient.invalidateQueries(['userBadges']);
       base44.auth.me().then(setUser);
     },
   });
+
+  const checkAndAwardBadges = async () => {
+    const completedCount = completions.filter(c => c.status === 'completed' && c.user_email === user.email).length + 1;
+    const scores = completions.filter(c => c.score && c.user_email === user.email).map(c => c.score);
+    const highScoreCount = scores.filter(s => s >= 90).length;
+    const perfectScoreCount = scores.filter(s => s === 100).length;
+    const newTotalXP = (user.total_xp || 0);
+    const newLevel = Math.floor(newTotalXP / 500) + 1;
+
+    for (const badge of badges) {
+      const alreadyEarned = userBadges.some(ub => ub.badge_id === badge.id);
+      if (alreadyEarned) continue;
+
+      let shouldAward = false;
+      switch (badge.criteria_type) {
+        case 'activities_completed':
+          shouldAward = completedCount >= badge.criteria_value;
+          break;
+        case 'total_xp':
+          shouldAward = newTotalXP >= badge.criteria_value;
+          break;
+        case 'high_score_count':
+          shouldAward = highScoreCount >= badge.criteria_value;
+          break;
+        case 'perfect_score':
+          shouldAward = perfectScoreCount >= badge.criteria_value;
+          break;
+        case 'level_reached':
+          shouldAward = newLevel >= badge.criteria_value;
+          break;
+      }
+
+      if (shouldAward) {
+        await base44.entities.UserBadge.create({
+          user_email: user.email,
+          badge_id: badge.id,
+          earned_at: new Date().toISOString()
+        });
+      }
+    }
+  };
 
   if (!user) return null;
 
@@ -71,6 +127,8 @@ export default function Dashboard() {
   const getActivityCompletion = (activity) => {
     return completions.find(c => c.activity_id === activity.id);
   };
+
+  const earnedBadges = badges.filter(b => userBadges.some(ub => ub.badge_id === b.id)).slice(0, 5);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -105,6 +163,12 @@ export default function Dashboard() {
                 </Button>
               </Link>
             )}
+            <Link to={createPageUrl('Profile')}>
+              <Button className="bg-purple-500 hover:bg-purple-600">
+                <User className="w-4 h-4 mr-2" />
+                Profile
+              </Button>
+            </Link>
             <Link to={createPageUrl('Leaderboard')}>
               <Button className="bg-orange-500 hover:bg-orange-600">
                 <Trophy className="w-4 h-4 mr-2" />
@@ -133,6 +197,33 @@ export default function Dashboard() {
             totalXP={totalXP}
           />
         </motion.div>
+
+        {earnedBadges.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="bg-slate-900 border border-slate-700 rounded-xl p-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Trophy className="w-6 h-6 text-yellow-400" />
+                <h2 className="text-2xl font-bold text-white">RECENT BADGES</h2>
+              </div>
+              <Link to={createPageUrl('Profile')}>
+                <Button variant="ghost" className="text-cyan-400 hover:text-cyan-300">
+                  View All →
+                </Button>
+              </Link>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {earnedBadges.map(badge => {
+                const earned = userBadges.find(ub => ub.badge_id === badge.id);
+                return <BadgeCard key={badge.id} badge={badge} earned={earned} small />;
+              })}
+            </div>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
