@@ -218,43 +218,6 @@ export default function Dashboard() {
             </h1>
             <p className="text-slate-400">Welcome back, Player {user.full_name}</p>
           </div>
-          <div className="flex gap-3">
-            {user.role === 'admin' && (
-              <Link to={createPageUrl('AdminDashboard')}>
-                <Button className="bg-cyan-500 hover:bg-cyan-600">
-                  <Target className="w-4 h-4 mr-2" />
-                  Admin Panel
-                </Button>
-              </Link>
-            )}
-            {(user.role === 'team_lead' || user.role === 'department_head') && (
-              <Link to={createPageUrl('TeamLeadDashboard')}>
-                <Button className="bg-purple-500 hover:bg-purple-600">
-                  <Target className="w-4 h-4 mr-2" />
-                  Team Dashboard
-                </Button>
-              </Link>
-            )}
-            <Link to={createPageUrl('Profile')}>
-              <Button className="bg-purple-500 hover:bg-purple-600">
-                <User className="w-4 h-4 mr-2" />
-                Profile
-              </Button>
-            </Link>
-            <Link to={createPageUrl('Leaderboard')}>
-              <Button className="bg-orange-500 hover:bg-orange-600">
-                <Trophy className="w-4 h-4 mr-2" />
-                High Scores
-              </Button>
-            </Link>
-            <Button 
-              onClick={() => base44.auth.logout()}
-              variant="outline"
-              className="border-slate-700 text-slate-300 hover:bg-slate-800"
-            >
-              Logout
-            </Button>
-            </div>
             </motion.div>
 
         <motion.div
