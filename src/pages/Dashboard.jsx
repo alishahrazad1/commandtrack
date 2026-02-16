@@ -214,7 +214,7 @@ export default function Dashboard() {
         >
           <div>
             <h1 className="text-4xl font-bold text-cyan-400 mb-2">
-              COMMAND CENTER
+              DASHBOARD
             </h1>
             <p className="text-slate-400">Welcome back, Player {user.full_name}</p>
           </div>
