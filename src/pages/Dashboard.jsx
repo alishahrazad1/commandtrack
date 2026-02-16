@@ -98,10 +98,24 @@ export default function Dashboard() {
 
       const newTotalXP = (user.total_xp || 0) + activity.xp_value;
       const newLevel = Math.floor(newTotalXP / 500) + 1;
+      const leveledUp = newLevel > (user.level || 1);
+      
       await base44.auth.updateMe({
         total_xp: newTotalXP,
         level: newLevel
       });
+
+      // Create notification for level up
+      if (leveledUp && user.notification_preferences?.inapp_milestones !== false) {
+        await base44.entities.Notification.create({
+          user_email: user.email,
+          type: 'level_up',
+          title: '⭐ Level Up!',
+          message: `Amazing! You've reached Level ${newLevel}!`,
+          priority: 'high',
+          action_url: createPageUrl('Profile')
+        });
+      }
 
       await checkAndAwardBadges();
     },
@@ -149,6 +163,18 @@ export default function Dashboard() {
           badge_id: badge.id,
           earned_at: new Date().toISOString()
         });
+
+        // Create notification for badge earned
+        if (user.notification_preferences?.inapp_achievements !== false) {
+          await base44.entities.Notification.create({
+            user_email: user.email,
+            type: 'badge_earned',
+            title: '🏆 Badge Earned!',
+            message: `Congratulations! You've earned the "${badge.name}" badge.`,
+            priority: 'normal',
+            action_url: createPageUrl('Profile')
+          });
+        }
       }
     }
   };

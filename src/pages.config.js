@@ -60,6 +60,7 @@ import TeamLeadDashboard from './pages/TeamLeadDashboard';
 import Notifications from './pages/Notifications';
 import NotificationSettings from './pages/NotificationSettings';
 import AdminAnnouncements from './pages/AdminAnnouncements';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -81,4 +82,5 @@ export const PAGES = {
 export const pagesConfig = {
     mainPage: "Dashboard",
     Pages: PAGES,
+    Layout: __Layout,
 };
