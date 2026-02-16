@@ -229,8 +229,15 @@ export default function Dashboard() {
                 High Scores
               </Button>
             </Link>
-          </div>
-        </motion.div>
+            <Button 
+              onClick={() => base44.auth.logout()}
+              variant="outline"
+              className="border-slate-700 text-slate-300 hover:bg-slate-800"
+            >
+              Logout
+            </Button>
+            </div>
+            </motion.div>
 
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
