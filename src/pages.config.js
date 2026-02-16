@@ -57,6 +57,7 @@ import Dashboard from './pages/Dashboard';
 import Leaderboard from './pages/Leaderboard';
 import Profile from './pages/Profile';
 import TeamLeadDashboard from './pages/TeamLeadDashboard';
+import AdminUserFix from './pages/AdminUserFix';
 
 
 export const PAGES = {
@@ -70,6 +71,7 @@ export const PAGES = {
     "Leaderboard": Leaderboard,
     "Profile": Profile,
     "TeamLeadDashboard": TeamLeadDashboard,
+    "AdminUserFix": AdminUserFix,
 }
 
 export const pagesConfig = {
