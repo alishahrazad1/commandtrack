@@ -23,7 +23,7 @@ export default function FilterPanel({ filters, onFilterChange, users, department
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-slate-700 text-white">
               <SelectItem value="all">All Departments</SelectItem>
-              {departments.map(dept => (
+              {deptNames.map(dept => (
                 <SelectItem key={dept} value={dept}>{dept}</SelectItem>
               ))}
             </SelectContent>
@@ -38,7 +38,7 @@ export default function FilterPanel({ filters, onFilterChange, users, department
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-slate-700 text-white">
               <SelectItem value="all">All Teams</SelectItem>
-              {teams.map(team => (
+              {teamNames.map(team => (
                 <SelectItem key={team} value={team}>{team}</SelectItem>
               ))}
             </SelectContent>
