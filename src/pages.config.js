@@ -48,28 +48,28 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AdminActivities from './pages/AdminActivities';
-import AdminDashboard from './pages/AdminDashboard';
-import Dashboard from './pages/Dashboard';
-import Leaderboard from './pages/Leaderboard';
-import AdminOrganization from './pages/AdminOrganization';
-import TeamLeadDashboard from './pages/TeamLeadDashboard';
-import Profile from './pages/Profile';
 import AdminBadges from './pages/AdminBadges';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminOrganization from './pages/AdminOrganization';
 import AdminPaths from './pages/AdminPaths';
 import AdminTeams from './pages/AdminTeams';
+import Dashboard from './pages/Dashboard';
+import Leaderboard from './pages/Leaderboard';
+import Profile from './pages/Profile';
+import TeamLeadDashboard from './pages/TeamLeadDashboard';
 
 
 export const PAGES = {
     "AdminActivities": AdminActivities,
-    "AdminDashboard": AdminDashboard,
-    "Dashboard": Dashboard,
-    "Leaderboard": Leaderboard,
-    "AdminOrganization": AdminOrganization,
-    "TeamLeadDashboard": TeamLeadDashboard,
-    "Profile": Profile,
     "AdminBadges": AdminBadges,
+    "AdminDashboard": AdminDashboard,
+    "AdminOrganization": AdminOrganization,
     "AdminPaths": AdminPaths,
     "AdminTeams": AdminTeams,
+    "Dashboard": Dashboard,
+    "Leaderboard": Leaderboard,
+    "Profile": Profile,
+    "TeamLeadDashboard": TeamLeadDashboard,
 }
 
 export const pagesConfig = {
