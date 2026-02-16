@@ -28,6 +28,16 @@ export default function Profile() {
     enabled: !!user,
   });
 
+  const { data: departments = [] } = useQuery({
+    queryKey: ['departments'],
+    queryFn: () => base44.entities.Department.list(),
+  });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+  });
+
   const { data: completions = [] } = useQuery({
     queryKey: ['userCompletions', user?.email],
     queryFn: () => base44.entities.ActivityCompletion.filter({ user_email: user.email }),

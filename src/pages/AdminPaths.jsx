@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Plus, Pencil, Trash2, GitBranch, ChevronRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createPageUrl } from "../utils";
 
 export default function AdminPaths() {
@@ -19,7 +21,9 @@ export default function AdminPaths() {
     name: '',
     description: '',
     order: 0,
-    is_active: true
+    is_active: true,
+    department_id: '',
+    team_id: ''
   });
 
   const queryClient = useQueryClient();
@@ -41,6 +45,16 @@ export default function AdminPaths() {
   const { data: activities = [] } = useQuery({
     queryKey: ['activities'],
     queryFn: () => base44.entities.Activity.list(),
+  });
+
+  const { data: departments = [] } = useQuery({
+    queryKey: ['departments'],
+    queryFn: () => base44.entities.Department.list(),
+  });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
   });
 
   const createMutation = useMutation({
@@ -73,7 +87,9 @@ export default function AdminPaths() {
       name: '',
       description: '',
       order: 0,
-      is_active: true
+      is_active: true,
+      department_id: '',
+      team_id: ''
     });
     setEditingPath(null);
   };
@@ -84,7 +100,9 @@ export default function AdminPaths() {
       name: path.name,
       description: path.description || '',
       order: path.order,
-      is_active: path.is_active
+      is_active: path.is_active,
+      department_id: path.department_id || '',
+      team_id: path.team_id || ''
     });
     setShowDialog(true);
   };
@@ -134,6 +152,9 @@ export default function AdminPaths() {
             const pathActivities = activities
               .filter(a => a.path_id === path.id)
               .sort((a, b) => (a.path_order || 0) - (b.path_order || 0));
+            
+            const dept = departments.find(d => d.id === path.department_id);
+            const team = teams.find(t => t.id === path.team_id);
 
             return (
               <Card key={path.id} className="bg-slate-900 border-slate-700 p-5">
@@ -146,6 +167,20 @@ export default function AdminPaths() {
                       <div>
                         <h3 className="font-bold text-white text-lg">{path.name}</h3>
                         <p className="text-slate-400 text-sm mt-1">{path.description}</p>
+                        {(dept || team) && (
+                          <div className="flex gap-2 mt-2">
+                            {dept && (
+                              <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">
+                                {dept.name}
+                              </Badge>
+                            )}
+                            {team && (
+                              <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
+                                {team.name}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <Button 
@@ -242,6 +277,37 @@ export default function AdminPaths() {
                   onChange={(e) => setFormData({...formData, order: parseInt(e.target.value)})}
                   className="bg-slate-800 border-slate-700 text-white mt-2"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-300">Assign to Department (Optional)</Label>
+                  <Select value={formData.department_id} onValueChange={(v) => setFormData({...formData, department_id: v, team_id: ''})}>
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white mt-2">
+                      <SelectValue placeholder="All departments" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                      <SelectItem value={null}>All Departments</SelectItem>
+                      {departments.map(dept => (
+                        <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-slate-300">Assign to Team (Optional)</Label>
+                  <Select value={formData.team_id} onValueChange={(v) => setFormData({...formData, team_id: v})}>
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white mt-2">
+                      <SelectValue placeholder="All teams" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                      <SelectItem value={null}>All Teams</SelectItem>
+                      {teams.map(team => (
+                        <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="flex items-center gap-2">

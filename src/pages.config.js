@@ -56,6 +56,7 @@ import TeamLeadDashboard from './pages/TeamLeadDashboard';
 import Profile from './pages/Profile';
 import AdminBadges from './pages/AdminBadges';
 import AdminPaths from './pages/AdminPaths';
+import AdminTeams from './pages/AdminTeams';
 
 
 export const PAGES = {
@@ -68,6 +69,7 @@ export const PAGES = {
     "Profile": Profile,
     "AdminBadges": AdminBadges,
     "AdminPaths": AdminPaths,
+    "AdminTeams": AdminTeams,
 }
 
 export const pagesConfig = {

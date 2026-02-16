@@ -27,9 +27,16 @@ export default function Dashboard() {
     queryFn: () => base44.entities.Activity.filter({ is_active: true }, 'order'),
   });
 
-  const { data: paths = [] } = useQuery({
+  const { data: allPaths = [] } = useQuery({
     queryKey: ['paths'],
     queryFn: () => base44.entities.ActivityPath.filter({ is_active: true }, 'order'),
+  });
+
+  const paths = allPaths.filter(path => {
+    if (!path.department_id && !path.team_id) return true;
+    if (path.team_id && user?.team_id === path.team_id) return true;
+    if (path.department_id && user?.department_id === path.department_id && !path.team_id) return true;
+    return false;
   });
 
   const activities = allActivities;
