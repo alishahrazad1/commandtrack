@@ -83,7 +83,7 @@ export default function Dashboard() {
           className="flex items-center justify-between"
         >
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-magenta-500 bg-clip-text text-transparent mb-2">
+            <h1 className="text-4xl font-bold text-cyan-400 mb-2">
               COMMAND CENTER
             </h1>
             <p className="text-slate-400">Welcome back, Player {user.full_name}</p>

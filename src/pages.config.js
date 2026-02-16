@@ -47,17 +47,17 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AdminActivities from './pages/AdminActivities';
+import AdminDashboard from './pages/AdminDashboard';
 import Dashboard from './pages/Dashboard';
 import Leaderboard from './pages/Leaderboard';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminActivities from './pages/AdminActivities';
 
 
 export const PAGES = {
+    "AdminActivities": AdminActivities,
+    "AdminDashboard": AdminDashboard,
     "Dashboard": Dashboard,
     "Leaderboard": Leaderboard,
-    "AdminDashboard": AdminDashboard,
-    "AdminActivities": AdminActivities,
 }
 
 export const pagesConfig = {
