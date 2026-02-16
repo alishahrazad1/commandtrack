@@ -10,9 +10,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
-import { Building2, Users, Edit2, Trash2, Plus, ArrowLeft, UserPlus, X, TrendingUp, Target } from "lucide-react";
+import { Building2, Users, Edit2, Trash2, Plus, ArrowLeft, UserPlus, X, TrendingUp, Target, Mail } from "lucide-react";
 import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 export default function AdminOrganization() {
   const [user, setUser] = useState(null);
@@ -22,6 +23,10 @@ export default function AdminOrganization() {
   const [editingTeam, setEditingTeam] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [searchEmail, setSearchEmail] = useState('');
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('user');
+  const [isInviting, setIsInviting] = useState(false);
   
   const queryClient = useQueryClient();
 
@@ -137,6 +142,27 @@ export default function AdminOrganization() {
       userId,
       data: { team_id: null }
     });
+  };
+
+  const handleInviteUser = async () => {
+    if (!inviteEmail) {
+      toast.error('Please enter an email address');
+      return;
+    }
+
+    setIsInviting(true);
+    try {
+      await base44.users.inviteUser(inviteEmail, inviteRole);
+      toast.success(`Invitation sent to ${inviteEmail}`);
+      setShowInviteDialog(false);
+      setInviteEmail('');
+      setInviteRole('user');
+      queryClient.invalidateQueries(['users']);
+    } catch (error) {
+      toast.error(error.message || 'Failed to send invitation');
+    } finally {
+      setIsInviting(false);
+    }
   };
 
   if (!user || user.role !== 'admin') return null;
@@ -348,6 +374,16 @@ export default function AdminOrganization() {
 
           {/* Team Members Tab */}
           <TabsContent value="members">
+            <div className="flex justify-end mb-4">
+              <Button
+                onClick={() => setShowInviteDialog(true)}
+                className="bg-green-500 hover:bg-green-600"
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Invite New User
+              </Button>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {teams.map((team) => {
                 const dept = departments.find(d => d.id === team.department_id);
@@ -531,6 +567,65 @@ export default function AdminOrganization() {
                   className="flex-1 bg-cyan-500 hover:bg-cyan-600"
                 >
                   Add to Team
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Invite User Dialog */}
+        <Dialog open={showInviteDialog} onOpenChange={() => setShowInviteDialog(false)}>
+          <DialogContent className="bg-slate-900 border-green-500/30 text-white">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-green-400 flex items-center gap-2">
+                <Mail className="w-6 h-6" />
+                Invite New User
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-slate-300 mb-2 block">Email Address *</label>
+                <Input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="newuser@example.com"
+                  className="bg-slate-800 border-slate-700 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-slate-300 mb-2 block">Role *</label>
+                <Select value={inviteRole} onValueChange={setInviteRole}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => {
+                    setShowInviteDialog(false);
+                    setInviteEmail('');
+                    setInviteRole('user');
+                  }}
+                  variant="outline"
+                  className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleInviteUser}
+                  disabled={!inviteEmail || isInviting}
+                  className="flex-1 bg-green-500 hover:bg-green-600"
+                >
+                  {isInviting ? 'Sending...' : 'Send Invitation'}
                 </Button>
               </div>
             </div>
