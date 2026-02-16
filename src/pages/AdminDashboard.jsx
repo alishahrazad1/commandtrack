@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
-import { Users, Target, TrendingUp, Settings, BarChart3, Download, Eye, Edit2, Check, X, Building2, ChevronRight, Trophy } from "lucide-react";
+import { Users, Target, TrendingUp, Settings, BarChart3, Download, Eye, Edit2, Check, X, Building2, ChevronRight, Trophy, GitBranch } from "lucide-react";
 import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
 import FilterPanel from "../components/admin/FilterPanel";
@@ -216,6 +216,12 @@ export default function AdminDashboard() {
               <Button className="bg-orange-500 hover:bg-orange-600">
                 <Building2 className="w-4 h-4 mr-2" />
                 Organization
+              </Button>
+            </Link>
+            <Link to={createPageUrl('AdminPaths')}>
+              <Button className="bg-purple-500 hover:bg-purple-600">
+                <GitBranch className="w-4 h-4 mr-2" />
+                Paths
               </Button>
             </Link>
             <Link to={createPageUrl('AdminBadges')}>

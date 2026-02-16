@@ -32,7 +32,9 @@ export default function AdminActivities() {
     order: 0,
     is_active: true,
     start_date: '',
-    end_date: ''
+    end_date: '',
+    path_id: '',
+    path_order: 0
   });
 
   const queryClient = useQueryClient();
@@ -49,6 +51,11 @@ export default function AdminActivities() {
   const { data: activities = [] } = useQuery({
     queryKey: ['activities'],
     queryFn: () => base44.entities.Activity.list('order'),
+  });
+
+  const { data: paths = [] } = useQuery({
+    queryKey: ['paths'],
+    queryFn: () => base44.entities.ActivityPath.list('order'),
   });
 
   const createMutation = useMutation({
@@ -86,7 +93,9 @@ export default function AdminActivities() {
       order: 0,
       is_active: true,
       start_date: '',
-      end_date: ''
+      end_date: '',
+      path_id: '',
+      path_order: 0
     });
     setEditingActivity(null);
   };
@@ -102,7 +111,9 @@ export default function AdminActivities() {
       order: activity.order,
       is_active: activity.is_active,
       start_date: activity.start_date ? new Date(activity.start_date).toISOString().slice(0, 16) : '',
-      end_date: activity.end_date ? new Date(activity.end_date).toISOString().slice(0, 16) : ''
+      end_date: activity.end_date ? new Date(activity.end_date).toISOString().slice(0, 16) : '',
+      path_id: activity.path_id || '',
+      path_order: activity.path_order || 0
     });
     setShowDialog(true);
   };
@@ -111,7 +122,9 @@ export default function AdminActivities() {
     const dataToSubmit = {
       ...formData,
       start_date: formData.start_date ? new Date(formData.start_date).toISOString() : null,
-      end_date: formData.end_date ? new Date(formData.end_date).toISOString() : null
+      end_date: formData.end_date ? new Date(formData.end_date).toISOString() : null,
+      path_id: formData.path_id || null,
+      path_order: formData.path_id ? formData.path_order : null
     };
     if (editingActivity) {
       updateMutation.mutate({ id: editingActivity.id, data: dataToSubmit });
@@ -286,6 +299,35 @@ export default function AdminActivities() {
                     className="bg-slate-800 border-slate-700 text-white mt-2"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-300">Activity Path (Optional)</Label>
+                  <Select value={formData.path_id} onValueChange={(v) => setFormData({...formData, path_id: v})}>
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white mt-2">
+                      <SelectValue placeholder="No path" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                      <SelectItem value={null}>No Path</SelectItem>
+                      {paths.map(path => (
+                        <SelectItem key={path.id} value={path.id}>{path.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {formData.path_id && (
+                  <div>
+                    <Label className="text-slate-300">Order in Path</Label>
+                    <Input
+                      type="number"
+                      value={formData.path_order}
+                      onChange={(e) => setFormData({...formData, path_order: parseInt(e.target.value)})}
+                      className="bg-slate-800 border-slate-700 text-white mt-2"
+                      min="0"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4">

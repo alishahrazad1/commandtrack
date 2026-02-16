@@ -10,6 +10,7 @@ import ProgressOverview from "../components/dashboard/ProgressOverview";
 import ActivityCard from "../components/dashboard/ActivityCard";
 import UploadDialog from "../components/UploadDialog";
 import BadgeCard from "../components/badges/BadgeCard";
+import PathProgress from "../components/paths/PathProgress";
 import { motion } from "framer-motion";
 
 export default function Dashboard() {
@@ -26,7 +27,13 @@ export default function Dashboard() {
     queryFn: () => base44.entities.Activity.filter({ is_active: true }, 'order'),
   });
 
+  const { data: paths = [] } = useQuery({
+    queryKey: ['paths'],
+    queryFn: () => base44.entities.ActivityPath.filter({ is_active: true }, 'order'),
+  });
+
   const activities = allActivities;
+  const standaloneActivities = activities.filter(a => !a.path_id);
 
   const { data: completions = [] } = useQuery({
     queryKey: ['completions', user?.email],
@@ -141,6 +148,22 @@ export default function Dashboard() {
     return completions.find(c => c.activity_id === activity.id);
   };
 
+  const isActivityUnlocked = (activity) => {
+    if (!activity.path_id) return true;
+    
+    const pathActivities = activities
+      .filter(a => a.path_id === activity.path_id)
+      .sort((a, b) => (a.path_order || 0) - (b.path_order || 0));
+    
+    const activityIndex = pathActivities.findIndex(a => a.id === activity.id);
+    if (activityIndex === 0) return true;
+    
+    const previousActivity = pathActivities[activityIndex - 1];
+    return completions.some(
+      c => c.activity_id === previousActivity.id && c.status === 'completed'
+    );
+  };
+
   const earnedBadges = badges.filter(b => userBadges.some(ub => ub.badge_id === b.id)).slice(0, 5);
 
   return (
@@ -238,33 +261,96 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <Target className="w-6 h-6 text-cyan-400" />
-            <h2 className="text-2xl font-bold text-white">ACTIVE QUESTS</h2>
-          </div>
-          <div className="space-y-4">
-            {activities.map((activity, index) => (
-              <motion.div
-                key={activity.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 + index * 0.05 }}
-              >
-                <ActivityCard
-                  activity={activity}
-                  completion={getActivityCompletion(activity)}
-                  onComplete={(act) => completeActivityMutation.mutate(act)}
-                  onUpload={(act) => setUploadActivity(act)}
+        {paths.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <Target className="w-6 h-6 text-cyan-400" />
+              <h2 className="text-2xl font-bold text-white">LEARNING PATHS</h2>
+            </div>
+            <div className="space-y-4">
+              {paths.map((path) => (
+                <PathProgress
+                  key={path.id}
+                  path={path}
+                  activities={activities}
+                  completions={completions}
                 />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {paths.map((path) => {
+          const pathActivities = activities
+            .filter(a => a.path_id === path.id)
+            .sort((a, b) => (a.path_order || 0) - (b.path_order || 0));
+
+          return (
+            <motion.div
+              key={path.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <Target className="w-6 h-6 text-purple-400" />
+                <h2 className="text-2xl font-bold text-white">{path.name.toUpperCase()}</h2>
+              </div>
+              <div className="space-y-4">
+                {pathActivities.map((activity, index) => (
+                  <motion.div
+                    key={activity.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 + index * 0.05 }}
+                  >
+                    <ActivityCard
+                      activity={activity}
+                      completion={getActivityCompletion(activity)}
+                      onComplete={(act) => completeActivityMutation.mutate(act)}
+                      onUpload={(act) => setUploadActivity(act)}
+                      isLocked={!isActivityUnlocked(activity)}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          );
+        })}
+
+        {standaloneActivities.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <Target className="w-6 h-6 text-cyan-400" />
+              <h2 className="text-2xl font-bold text-white">ACTIVE QUESTS</h2>
+            </div>
+            <div className="space-y-4">
+              {standaloneActivities.map((activity, index) => (
+                <motion.div
+                  key={activity.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.45 + index * 0.05 }}
+                >
+                  <ActivityCard
+                    activity={activity}
+                    completion={getActivityCompletion(activity)}
+                    onComplete={(act) => completeActivityMutation.mutate(act)}
+                    onUpload={(act) => setUploadActivity(act)}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
 
       <UploadDialog
