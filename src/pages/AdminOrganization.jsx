@@ -55,6 +55,11 @@ export default function AdminOrganization() {
     queryFn: () => base44.entities.User.list(),
   });
 
+  const { data: pendingInvitations = [] } = useQuery({
+    queryKey: ['pendingInvitations'],
+    queryFn: () => base44.entities.PendingInvitation.filter({ status: 'pending' }),
+  });
+
   const { data: completions = [] } = useQuery({
     queryKey: ['completions'],
     queryFn: () => base44.entities.ActivityCompletion.list(),
@@ -132,6 +137,14 @@ export default function AdminOrganization() {
     },
   });
 
+  const deletePendingInvitationMutation = useMutation({
+    mutationFn: (invitationId) => base44.entities.PendingInvitation.delete(invitationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['pendingInvitations']);
+      toast.success('Invitation cancelled');
+    },
+  });
+
   const handleInviteUser = async () => {
     if (!inviteEmail) {
       toast.error('Please enter an email address');
@@ -141,6 +154,15 @@ export default function AdminOrganization() {
     setIsInviting(true);
     try {
       await base44.users.inviteUser(inviteEmail, inviteRole);
+      
+      // Track pending invitation
+      await base44.entities.PendingInvitation.create({
+        email: inviteEmail,
+        role: inviteRole,
+        team_id: inviteTeamId || null,
+        invited_by: user.email,
+        status: 'pending'
+      });
       
       if (inviteTeamId) {
         toast.success(`Invitation sent to ${inviteEmail}. Assign them to the team after they accept.`);
@@ -153,6 +175,7 @@ export default function AdminOrganization() {
       setInviteRole('user');
       setInviteTeamId('');
       queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries(['pendingInvitations']);
     } catch (error) {
       toast.error(error.message || 'Failed to send invitation');
     } finally {
@@ -393,6 +416,42 @@ export default function AdminOrganization() {
                   </Button>
                 </div>
               </div>
+
+              {pendingInvitations.length > 0 && (
+                <div className="mb-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                  <h3 className="text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Pending Invitations ({pendingInvitations.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {pendingInvitations.map(inv => {
+                      const invitedTeam = teams.find(t => t.id === inv.team_id);
+                      return (
+                        <div key={inv.id} className="flex items-center justify-between bg-slate-800/50 rounded p-2">
+                          <div>
+                            <span className="text-white text-sm">{inv.email}</span>
+                            <div className="text-xs text-slate-400">
+                              Role: {inv.role} {invitedTeam && `• Team: ${invitedTeam.name}`}
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() => {
+                              if (confirm(`Cancel invitation for ${inv.email}?`)) {
+                                deletePendingInvitationMutation.mutate(inv.id);
+                              }
+                            }}
+                            size="sm"
+                            variant="ghost"
+                            className="text-slate-400 hover:text-red-400"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="overflow-x-auto">
                 <table className="w-full">
