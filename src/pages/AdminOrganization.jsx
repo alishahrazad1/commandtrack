@@ -56,10 +56,15 @@ export default function AdminOrganization() {
     queryFn: () => base44.entities.User.list(),
   });
 
-  const { data: pendingInvitations = [] } = useQuery({
+  const { data: allPendingInvitations = [] } = useQuery({
     queryKey: ['pendingInvitations'],
     queryFn: () => base44.entities.PendingInvitation.filter({ status: 'pending' }),
   });
+
+  // Filter out invitations for users who have already registered
+  const pendingInvitations = allPendingInvitations.filter(
+    inv => !users.some(u => u.email === inv.email)
+  );
 
   const { data: completions = [] } = useQuery({
     queryKey: ['completions'],
