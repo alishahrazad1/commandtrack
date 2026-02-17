@@ -13,6 +13,7 @@ import { ArrowLeft, Plus, Pencil, Trash2, BookOpen, Users, MessageSquare, Upload
 import { createPageUrl } from "../utils";
 import BulkCompletionDialog from "../components/admin/BulkCompletionDialog";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import ReactQuill from 'react-quill';
 
 const activityIcons = {
   training_module: BookOpen,
@@ -460,11 +461,11 @@ export default function AdminActivities() {
 
               <div>
                 <Label className="text-slate-300">Description</Label>
-                <Textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  className="bg-slate-800 border-slate-700 text-white mt-2"
-                  rows={3}
+                <ReactQuill
+                  value={formData.description || ''}
+                  onChange={(value) => setFormData({...formData, description: value})}
+                  className="bg-slate-800 border-slate-700 text-white mt-2 rounded-lg [&_.ql-container]:border-0 [&_.ql-editor]:min-h-[100px] [&_.ql-toolbar]:border-slate-700 [&_.ql-stroke]:stroke-slate-400 [&_.ql-fill]:fill-slate-400 [&_.ql-picker-label]:text-slate-400"
+                  theme="snow"
                 />
               </div>
 
