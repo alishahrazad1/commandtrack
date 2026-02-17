@@ -264,6 +264,9 @@ export default function AdminActivities() {
       }
     },
     onSuccess: async () => {
+      // Wait a bit for database to commit changes
+      await new Promise(resolve => setTimeout(resolve, 300));
+      queryClient.removeQueries(['activities']);
       await refetchActivities();
     },
   });
