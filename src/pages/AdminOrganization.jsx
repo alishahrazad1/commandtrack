@@ -61,6 +61,16 @@ export default function AdminOrganization() {
     queryFn: () => base44.entities.PendingInvitation.filter({ status: 'pending' }),
   });
 
+  useEffect(() => {
+    const unsubscribe = base44.entities.PendingInvitation.subscribe((event) => {
+      queryClient.invalidateQueries(['pendingInvitations']);
+      if (event.type === 'update' && event.data.status === 'accepted') {
+        queryClient.invalidateQueries(['users']);
+      }
+    });
+    return unsubscribe;
+  }, [queryClient]);
+
   const { data: completions = [] } = useQuery({
     queryKey: ['completions'],
     queryFn: () => base44.entities.ActivityCompletion.list(),
