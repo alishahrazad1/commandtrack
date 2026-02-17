@@ -424,7 +424,10 @@ export default function AdminActivities() {
                         </Button>
                       </div>
                     </div>
-                    <p className="text-slate-400 text-sm mb-2">{activity.description}</p>
+                    <div 
+                      className="text-slate-400 text-sm mb-2 [&_p]:mb-1 [&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4 [&_strong]:font-bold [&_em]:italic"
+                      dangerouslySetInnerHTML={{ __html: activity.description }}
+                    />
                     <div className="flex gap-4 text-sm">
                       <span className="text-cyan-400">+{activity.xp_value} XP</span>
                       <span className="text-slate-500">•</span>
