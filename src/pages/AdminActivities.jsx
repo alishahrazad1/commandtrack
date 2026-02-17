@@ -257,7 +257,20 @@ export default function AdminActivities() {
     });
   };
 
-  const handleDragEnd = async (result) => {
+  const reorderMutation = useMutation({
+    mutationFn: async ({ reordered }) => {
+      await Promise.all(
+        reordered.map((activity, index) => 
+          base44.entities.Activity.update(activity.id, { path_order: index })
+        )
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['activities']);
+    },
+  });
+
+  const handleDragEnd = (result) => {
     if (!result.destination || !selectedPath) return;
 
     const pathActivities = activities
@@ -268,14 +281,7 @@ export default function AdminActivities() {
     const [removed] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, removed);
 
-    // Update all activities in the path with new order
-    await Promise.all(
-      reordered.map((activity, index) => 
-        base44.entities.Activity.update(activity.id, { path_order: index })
-      )
-    );
-
-    queryClient.invalidateQueries(['activities']);
+    reorderMutation.mutate({ reordered });
   };
 
   if (!user || user.role !== 'admin') return null;
