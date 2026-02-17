@@ -51,7 +51,6 @@ import AdminActivities from './pages/AdminActivities';
 import AdminAnnouncements from './pages/AdminAnnouncements';
 import AdminBadges from './pages/AdminBadges';
 import AdminDashboard from './pages/AdminDashboard';
-import AdminOrganization from './pages/AdminOrganization';
 import AdminPaths from './pages/AdminPaths';
 import AdminUserFix from './pages/AdminUserFix';
 import Dashboard from './pages/Dashboard';
@@ -60,6 +59,7 @@ import NotificationSettings from './pages/NotificationSettings';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import TeamLeadDashboard from './pages/TeamLeadDashboard';
+import AdminOrganization from './pages/AdminOrganization';
 import __Layout from './Layout.jsx';
 
 
@@ -68,7 +68,6 @@ export const PAGES = {
     "AdminAnnouncements": AdminAnnouncements,
     "AdminBadges": AdminBadges,
     "AdminDashboard": AdminDashboard,
-    "AdminOrganization": AdminOrganization,
     "AdminPaths": AdminPaths,
     "AdminUserFix": AdminUserFix,
     "Dashboard": Dashboard,
@@ -77,6 +76,7 @@ export const PAGES = {
     "Notifications": Notifications,
     "Profile": Profile,
     "TeamLeadDashboard": TeamLeadDashboard,
+    "AdminOrganization": AdminOrganization,
 }
 
 export const pagesConfig = {
