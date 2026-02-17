@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Link } from "react-router-dom";
 import { Building2, Users, Edit2, Trash2, Plus, ArrowLeft, UserPlus, X, TrendingUp, Target, Mail, Upload } from "lucide-react";
 import { createPageUrl } from "../utils";
@@ -60,16 +59,6 @@ export default function AdminOrganization() {
     queryKey: ['pendingInvitations'],
     queryFn: () => base44.entities.PendingInvitation.filter({ status: 'pending' }),
   });
-
-  useEffect(() => {
-    const unsubscribe = base44.entities.PendingInvitation.subscribe((event) => {
-      queryClient.invalidateQueries(['pendingInvitations']);
-      if (event.type === 'update' && event.data.status === 'accepted') {
-        queryClient.invalidateQueries(['users']);
-      }
-    });
-    return unsubscribe;
-  }, [queryClient]);
 
   const { data: completions = [] } = useQuery({
     queryKey: ['completions'],
@@ -429,45 +418,39 @@ export default function AdminOrganization() {
               </div>
 
               {pendingInvitations.length > 0 && (
-                <Accordion type="single" collapsible className="mb-4">
-                  <AccordionItem value="pending" className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                      <div className="flex items-center gap-2 text-yellow-400 font-semibold">
-                        <Mail className="w-4 h-4" />
-                        Pending Invitations ({pendingInvitations.length})
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pb-4">
-                      <div className="space-y-2">
-                        {pendingInvitations.map(inv => {
-                          const invitedTeam = teams.find(t => t.id === inv.team_id);
-                          return (
-                            <div key={inv.id} className="flex items-center justify-between bg-slate-800/50 rounded p-2">
-                              <div>
-                                <span className="text-white text-sm">{inv.email}</span>
-                                <div className="text-xs text-slate-400">
-                                  Role: {inv.role} {invitedTeam && `• Team: ${invitedTeam.name}`}
-                                </div>
-                              </div>
-                              <Button
-                                onClick={() => {
-                                  if (confirm(`Cancel invitation for ${inv.email}?`)) {
-                                    deletePendingInvitationMutation.mutate(inv.id);
-                                  }
-                                }}
-                                size="sm"
-                                variant="ghost"
-                                className="text-slate-400 hover:text-red-400"
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
+                <div className="mb-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                  <h3 className="text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Pending Invitations ({pendingInvitations.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {pendingInvitations.map(inv => {
+                      const invitedTeam = teams.find(t => t.id === inv.team_id);
+                      return (
+                        <div key={inv.id} className="flex items-center justify-between bg-slate-800/50 rounded p-2">
+                          <div>
+                            <span className="text-white text-sm">{inv.email}</span>
+                            <div className="text-xs text-slate-400">
+                              Role: {inv.role} {invitedTeam && `• Team: ${invitedTeam.name}`}
                             </div>
-                          );
-                        })}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+                          </div>
+                          <Button
+                            onClick={() => {
+                              if (confirm(`Cancel invitation for ${inv.email}?`)) {
+                                deletePendingInvitationMutation.mutate(inv.id);
+                              }
+                            }}
+                            size="sm"
+                            variant="ghost"
+                            className="text-slate-400 hover:text-red-400"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
 
               <div className="overflow-x-auto">
