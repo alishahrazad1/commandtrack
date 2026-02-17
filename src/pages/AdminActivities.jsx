@@ -269,9 +269,11 @@ export default function AdminActivities() {
     reordered.splice(result.destination.index, 0, removed);
 
     // Update all activities in the path with new order
-    for (let i = 0; i < reordered.length; i++) {
-      await base44.entities.Activity.update(reordered[i].id, { path_order: i });
-    }
+    await Promise.all(
+      reordered.map((activity, index) => 
+        base44.entities.Activity.update(activity.id, { path_order: index })
+      )
+    );
 
     queryClient.invalidateQueries(['activities']);
   };
