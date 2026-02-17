@@ -13,7 +13,7 @@ import { ArrowLeft, Plus, Pencil, Trash2, BookOpen, Users, MessageSquare, Upload
 import { createPageUrl } from "../utils";
 import BulkCompletionDialog from "../components/admin/BulkCompletionDialog";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import ReactQuill from 'react-quill';
+
 
 const activityIcons = {
   training_module: BookOpen,
@@ -424,10 +424,9 @@ export default function AdminActivities() {
                         </Button>
                       </div>
                     </div>
-                    <div 
-                      className="text-slate-400 text-sm mb-2 [&_p]:mb-1 [&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4 [&_strong]:font-bold [&_em]:italic"
-                      dangerouslySetInnerHTML={{ __html: activity.description || '' }}
-                    />
+                    <p className="text-slate-400 text-sm mb-2 whitespace-pre-wrap">
+                      {activity.description}
+                    </p>
                     <div className="flex gap-4 text-sm">
                       <span className="text-cyan-400">+{activity.xp_value} XP</span>
                       <span className="text-slate-500">•</span>
@@ -464,11 +463,12 @@ export default function AdminActivities() {
 
               <div>
                 <Label className="text-slate-300">Description</Label>
-                <ReactQuill
+                <Textarea
                   value={formData.description || ''}
-                  onChange={(value) => setFormData({...formData, description: value})}
-                  className="bg-slate-800 border-slate-700 text-white mt-2 rounded-lg [&_.ql-container]:border-0 [&_.ql-editor]:min-h-[100px] [&_.ql-toolbar]:border-slate-700 [&_.ql-stroke]:stroke-slate-400 [&_.ql-fill]:fill-slate-400 [&_.ql-picker-label]:text-slate-400"
-                  theme="snow"
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  className="bg-slate-800 border-slate-700 text-white mt-2"
+                  rows={4}
+                  placeholder="Enter activity description..."
                 />
               </div>
 
