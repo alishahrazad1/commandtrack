@@ -50,8 +50,8 @@ export default function Dashboard() {
             await base44.auth.updateMe(updateData);
           }
           
-          // Mark invitation as accepted
-          await base44.entities.PendingInvitation.update(invitation.id, { status: 'accepted' });
+          // Delete the pending invitation since user has registered
+          await base44.entities.PendingInvitation.delete(invitation.id);
         }
       } catch (error) {
         console.error('Error processing invitation:', error);
