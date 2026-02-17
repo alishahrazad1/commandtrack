@@ -265,9 +265,35 @@ export default function AdminActivities() {
         )
       );
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries(['activities']);
-      await refetchActivities();
+    onMutate: async ({ reordered }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries(['activities']);
+      
+      // Snapshot previous value
+      const previousActivities = queryClient.getQueryData(['activities']);
+      
+      // Optimistically update to the new value
+      queryClient.setQueryData(['activities'], (old) => {
+        const updated = [...(old || [])];
+        reordered.forEach((activity, index) => {
+          const actIndex = updated.findIndex(a => a.id === activity.id);
+          if (actIndex !== -1) {
+            updated[actIndex] = { ...updated[actIndex], path_order: index };
+          }
+        });
+        return updated;
+      });
+      
+      return { previousActivities };
+    },
+    onError: (err, newData, context) => {
+      // Rollback on error
+      if (context?.previousActivities) {
+        queryClient.setQueryData(['activities'], context.previousActivities);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(['activities']);
     },
   });
 
