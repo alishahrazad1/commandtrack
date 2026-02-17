@@ -56,7 +56,7 @@ export default function AdminActivities() {
     });
   }, []);
 
-  const { data: activities = [] } = useQuery({
+  const { data: activities = [], refetch: refetchActivities } = useQuery({
     queryKey: ['activities'],
     queryFn: () => base44.entities.Activity.list('order'),
   });
@@ -265,8 +265,9 @@ export default function AdminActivities() {
         )
       );
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['activities']);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(['activities']);
+      await refetchActivities();
     },
   });
 
