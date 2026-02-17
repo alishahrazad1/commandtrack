@@ -21,7 +21,42 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    base44.auth.me().then(setUser);
+    base44.auth.me().then(async (currentUser) => {
+      setUser(currentUser);
+      
+      // Check for pending invitation and process it
+      try {
+        const pendingInvites = await base44.entities.PendingInvitation.filter({ 
+          email: currentUser.email, 
+          status: 'pending' 
+        });
+        
+        if (pendingInvites.length > 0) {
+          const invitation = pendingInvites[0];
+          
+          // Update user with team/department from invitation if specified
+          const updateData = {};
+          if (invitation.team_id) {
+            updateData.team_id = invitation.team_id;
+            // Fetch team to get department_id
+            const teams = await base44.entities.Team.list();
+            const team = teams.find(t => t.id === invitation.team_id);
+            if (team) {
+              updateData.department_id = team.department_id;
+            }
+          }
+          
+          if (Object.keys(updateData).length > 0) {
+            await base44.auth.updateMe(updateData);
+          }
+          
+          // Mark invitation as accepted
+          await base44.entities.PendingInvitation.update(invitation.id, { status: 'accepted' });
+        }
+      } catch (error) {
+        console.error('Error processing invitation:', error);
+      }
+    });
   }, []);
 
   const { data: allActivities = [] } = useQuery({
