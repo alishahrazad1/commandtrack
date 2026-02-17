@@ -3,9 +3,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Zap, Target, Award, Download, CheckCircle2, Circle } from "lucide-react";
+import { Zap, Target, Award, Download, CheckCircle2, Circle, X } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
 
 export default function EmployeeReport({ user, activities, completions, open, onClose, onExport }) {
+  const queryClient = useQueryClient();
+
+  const deleteCompletionMutation = useMutation({
+    mutationFn: async (completionId) => {
+      await base44.entities.ActivityCompletion.delete(completionId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['completions']);
+    },
+  });
+
   if (!user) return null;
 
   const userCompletions = completions.filter(c => c.user_email === user.email);
@@ -145,6 +158,17 @@ export default function EmployeeReport({ user, activities, completions, open, on
                         </div>
                       )}
                     </div>
+
+                    {isCompleted && (
+                      <Button
+                        onClick={() => deleteCompletionMutation.mutate(completion.id)}
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </Card>
               ))}
