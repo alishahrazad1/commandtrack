@@ -23,15 +23,15 @@ export default function ProgressOverview({ totalActivities, completedActivities,
         </div>
       </Card>
 
-      <Card className="relative overflow-hidden bg-gradient-to-br from-magenta-900/50 to-slate-900 border-magenta-500/30">
+      <Card className="relative overflow-hidden bg-gradient-to-br from-purple-900/50 to-slate-900 border-purple-500/30">
         <div className="absolute inset-0 bg-grid-pattern opacity-10" />
         <div className="relative p-6">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg bg-magenta-500/20 border border-magenta-500/30">
-              <CheckCircle2 className="w-6 h-6 text-magenta-400" />
+            <div className="p-3 rounded-lg bg-purple-500/20 border border-purple-500/30">
+              <CheckCircle2 className="w-6 h-6 text-purple-400" />
             </div>
             <div>
-              <p className="text-xs text-magenta-400 font-medium">QUESTS COMPLETED</p>
+              <p className="text-xs text-purple-400 font-medium">QUESTS COMPLETED</p>
               <p className="text-2xl font-bold text-white">{completedActivities} / {totalActivities}</p>
             </div>
           </div>

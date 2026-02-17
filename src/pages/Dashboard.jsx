@@ -180,7 +180,8 @@ export default function Dashboard() {
 
   if (!user) return null;
 
-  const completedActivities = completions.filter(c => c.status === 'completed').length;
+  const completedActivityIds = new Set(completions.filter(c => c.status === 'completed').map(c => c.activity_id));
+  const completedActivities = completedActivityIds.size;
   const totalXP = user.total_xp || 0;
   const level = user.level || 1;
 

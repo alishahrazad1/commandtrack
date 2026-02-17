@@ -48,6 +48,7 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AdminActivities from './pages/AdminActivities';
+import AdminAnnouncements from './pages/AdminAnnouncements';
 import AdminBadges from './pages/AdminBadges';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminOrganization from './pages/AdminOrganization';
@@ -55,16 +56,16 @@ import AdminPaths from './pages/AdminPaths';
 import AdminUserFix from './pages/AdminUserFix';
 import Dashboard from './pages/Dashboard';
 import Leaderboard from './pages/Leaderboard';
+import NotificationSettings from './pages/NotificationSettings';
+import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import TeamLeadDashboard from './pages/TeamLeadDashboard';
-import Notifications from './pages/Notifications';
-import NotificationSettings from './pages/NotificationSettings';
-import AdminAnnouncements from './pages/AdminAnnouncements';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AdminActivities": AdminActivities,
+    "AdminAnnouncements": AdminAnnouncements,
     "AdminBadges": AdminBadges,
     "AdminDashboard": AdminDashboard,
     "AdminOrganization": AdminOrganization,
@@ -72,11 +73,10 @@ export const PAGES = {
     "AdminUserFix": AdminUserFix,
     "Dashboard": Dashboard,
     "Leaderboard": Leaderboard,
+    "NotificationSettings": NotificationSettings,
+    "Notifications": Notifications,
     "Profile": Profile,
     "TeamLeadDashboard": TeamLeadDashboard,
-    "Notifications": Notifications,
-    "NotificationSettings": NotificationSettings,
-    "AdminAnnouncements": AdminAnnouncements,
 }
 
 export const pagesConfig = {
