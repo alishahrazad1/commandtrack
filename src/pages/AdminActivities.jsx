@@ -259,41 +259,12 @@ export default function AdminActivities() {
 
   const reorderMutation = useMutation({
     mutationFn: async ({ reordered }) => {
-      await Promise.all(
-        reordered.map((activity, index) => 
-          base44.entities.Activity.update(activity.id, { path_order: index })
-        )
-      );
-    },
-    onMutate: async ({ reordered }) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries(['activities']);
-      
-      // Snapshot previous value
-      const previousActivities = queryClient.getQueryData(['activities']);
-      
-      // Optimistically update to the new value
-      queryClient.setQueryData(['activities'], (old) => {
-        const updated = [...(old || [])];
-        reordered.forEach((activity, index) => {
-          const actIndex = updated.findIndex(a => a.id === activity.id);
-          if (actIndex !== -1) {
-            updated[actIndex] = { ...updated[actIndex], path_order: index };
-          }
-        });
-        return updated;
-      });
-      
-      return { previousActivities };
-    },
-    onError: (err, newData, context) => {
-      // Rollback on error
-      if (context?.previousActivities) {
-        queryClient.setQueryData(['activities'], context.previousActivities);
+      for (let i = 0; i < reordered.length; i++) {
+        await base44.entities.Activity.update(reordered[i].id, { path_order: i });
       }
     },
-    onSettled: () => {
-      queryClient.invalidateQueries(['activities']);
+    onSuccess: async () => {
+      await refetchActivities();
     },
   });
 
