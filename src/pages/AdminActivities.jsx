@@ -9,9 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Plus, Pencil, Trash2, BookOpen, Users, MessageSquare, Upload, Video, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, BookOpen, Users, MessageSquare, Upload, Video, CheckCircle2, GripVertical } from "lucide-react";
 import { createPageUrl } from "../utils";
 import BulkCompletionDialog from "../components/admin/BulkCompletionDialog";
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const activityIcons = {
   training_module: BookOpen,
@@ -42,6 +43,7 @@ export default function AdminActivities() {
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [selectedActivities, setSelectedActivities] = useState([]);
   const [showBulkDialog, setShowBulkDialog] = useState(false);
+  const [selectedPath, setSelectedPath] = useState('');
 
   const queryClient = useQueryClient();
 
@@ -255,7 +257,34 @@ export default function AdminActivities() {
     });
   };
 
+  const handleDragEnd = async (result) => {
+    if (!result.destination || !selectedPath) return;
+
+    const pathActivities = activities
+      .filter(a => a.path_id === selectedPath)
+      .sort((a, b) => (a.path_order || 0) - (b.path_order || 0));
+
+    const reordered = Array.from(pathActivities);
+    const [removed] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, removed);
+
+    // Update all activities in the path with new order
+    for (let i = 0; i < reordered.length; i++) {
+      await base44.entities.Activity.update(reordered[i].id, { path_order: i });
+    }
+
+    queryClient.invalidateQueries(['activities']);
+  };
+
   if (!user || user.role !== 'admin') return null;
+
+  const pathActivities = selectedPath 
+    ? activities
+        .filter(a => a.path_id === selectedPath)
+        .sort((a, b) => (a.path_order || 0) - (b.path_order || 0))
+    : [];
+
+  const standaloneActivities = activities.filter(a => !a.path_id);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -286,8 +315,69 @@ export default function AdminActivities() {
           </Button>
         </div>
 
+        {paths.length > 0 && (
+          <Card className="bg-slate-900 border-slate-700 p-4">
+            <Label className="text-slate-300 mb-2 block">Reorder Activities in Path</Label>
+            <Select value={selectedPath} onValueChange={setSelectedPath}>
+              <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                <SelectValue placeholder="Select a path to reorder activities" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                {paths.map(path => (
+                  <SelectItem key={path.id} value={path.id}>{path.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Card>
+        )}
+
+        {selectedPath && pathActivities.length > 0 && (
+          <Card className="bg-slate-900 border-slate-700 p-4">
+            <h3 className="font-bold text-white mb-3">Drag to Reorder Path Activities</h3>
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="path-activities">
+                {(provided) => (
+                  <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                    {pathActivities.map((activity, index) => {
+                      const Icon = activityIcons[activity.activity_type];
+                      return (
+                        <Draggable key={activity.id} draggableId={activity.id} index={index}>
+                          {(provided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className="bg-slate-800 border border-slate-700 rounded-lg p-4 flex items-center gap-3"
+                            >
+                              <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing">
+                                <GripVertical className="w-5 h-5 text-slate-500" />
+                              </div>
+                              <div className="p-2 bg-slate-900 rounded border border-slate-700">
+                                <Icon className="w-5 h-5 text-cyan-400" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-medium text-white">{activity.title}</p>
+                                <p className="text-xs text-slate-400">Order: {index + 1}</p>
+                              </div>
+                              <span className="text-xs text-cyan-400">+{activity.xp_value} XP</span>
+                            </div>
+                          )}
+                        </Draggable>
+                      );
+                    })}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </Card>
+        )}
+
+        <h2 className="text-xl font-bold text-white mt-8">
+          {selectedPath ? 'Standalone Activities' : 'All Activities'}
+        </h2>
+
         <div className="space-y-3">
-          {activities.map((activity) => {
+          {(selectedPath ? standaloneActivities : activities).map((activity) => {
             const Icon = activityIcons[activity.activity_type];
             const isSelected = selectedActivities.includes(activity.id);
             return (
