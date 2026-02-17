@@ -101,7 +101,7 @@ export default function ActivityCard({ activity, completion, onComplete, onUploa
 
               <div 
                 className="text-sm text-slate-400 mb-4 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4 [&_strong]:font-bold [&_em]:italic"
-                dangerouslySetInnerHTML={{ __html: activity.description }}
+                dangerouslySetInnerHTML={{ __html: activity.description || '' }}
               />
 
               {isScheduled && (
