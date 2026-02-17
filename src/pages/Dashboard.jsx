@@ -258,7 +258,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <Trophy className="w-6 h-6 text-yellow-400" />
-                <h2 className="text-2xl font-bold text-white">RECENT BADGES</h2>
+                <h2 className="text-2xl font-bold text-white">ACHIEVEMENT BADGES</h2>
               </div>
               <Link to={createPageUrl('Profile')}>
                 <Button variant="ghost" className="text-cyan-400 hover:text-cyan-300">
@@ -266,10 +266,10 @@ export default function Dashboard() {
                 </Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {earnedBadges.map(badge => {
                 const earned = userBadges.find(ub => ub.badge_id === badge.id);
-                return <BadgeCard key={badge.id} badge={badge} earned={earned} small />;
+                return <BadgeCard key={badge.id} badge={badge} earned={earned} />;
               })}
             </div>
           </motion.div>
