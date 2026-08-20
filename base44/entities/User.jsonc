@@ -1,0 +1,101 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user",
+        "team_lead",
+        "department_head"
+      ],
+      "default": "user"
+    },
+    "total_xp": {
+      "type": "number",
+      "default": 0
+    },
+    "level": {
+      "type": "number",
+      "default": 1
+    },
+    "department_id": {
+      "type": "string",
+      "description": "Reference to Department"
+    },
+    "team_id": {
+      "type": "string",
+      "description": "Reference to Team"
+    },
+    "avatar_color": {
+      "type": "string",
+      "description": "Avatar background color"
+    },
+    "notification_preferences": {
+      "type": "object",
+      "description": "User notification preferences",
+      "properties": {
+        "email_achievements": {
+          "type": "boolean",
+          "default": true
+        },
+        "email_milestones": {
+          "type": "boolean",
+          "default": true
+        },
+        "email_announcements": {
+          "type": "boolean",
+          "default": true
+        },
+        "email_weekly_summary": {
+          "type": "boolean",
+          "default": true
+        },
+        "email_monthly_summary": {
+          "type": "boolean",
+          "default": false
+        },
+        "email_reminders": {
+          "type": "boolean",
+          "default": true
+        },
+        "inapp_achievements": {
+          "type": "boolean",
+          "default": true
+        },
+        "inapp_milestones": {
+          "type": "boolean",
+          "default": true
+        },
+        "inapp_announcements": {
+          "type": "boolean",
+          "default": true
+        },
+        "inapp_reminders": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    }
+  },
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.email": "{{user.email}}"
+        }
+      ]
+    }
+  },
+  "required": [
+    "department_id",
+    "team_id",
+    "avatar_color"
+  ]
+}

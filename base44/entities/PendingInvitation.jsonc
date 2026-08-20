@@ -1,0 +1,35 @@
+{
+  "name": "PendingInvitation",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Email of invited user"
+    },
+    "role": {
+      "type": "string",
+      "description": "Role assigned to user"
+    },
+    "team_id": {
+      "type": "string",
+      "description": "Team to assign after registration"
+    },
+    "invited_by": {
+      "type": "string",
+      "description": "Email of admin who sent invitation"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted"
+      ],
+      "default": "pending",
+      "description": "Invitation status"
+    }
+  },
+  "required": [
+    "email",
+    "role"
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "name": "ActivityCompletion",
+  "type": "object",
+  "properties": {
+    "activity_id": {
+      "type": "string",
+      "description": "Reference to Activity"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User who completed the activity"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "in_progress",
+        "not_started"
+      ],
+      "default": "completed"
+    },
+    "score": {
+      "type": "number",
+      "description": "Score for uploaded submissions (0-100)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "User notes or AI feedback"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "Uploaded file for call agenda submissions"
+    },
+    "xp_earned": {
+      "type": "number",
+      "description": "XP earned from this completion"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Completion timestamp"
+    }
+  },
+  "required": [
+    "activity_id",
+    "user_email",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "data.user_email": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.user_email": "{{user.email}}"
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

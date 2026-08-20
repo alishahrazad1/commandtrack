@@ -1,0 +1,47 @@
+{
+  "name": "Badge",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Badge name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Badge description"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Icon name from lucide-react"
+    },
+    "color": {
+      "type": "string",
+      "description": "Badge color (hex or tailwind class)"
+    },
+    "criteria_type": {
+      "type": "string",
+      "enum": [
+        "activities_completed",
+        "total_xp",
+        "high_score_count",
+        "perfect_score",
+        "streak_days",
+        "level_reached"
+      ],
+      "description": "Type of achievement"
+    },
+    "criteria_value": {
+      "type": "number",
+      "description": "Target value for earning badge"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "criteria_type",
+    "criteria_value"
+  ]
+}

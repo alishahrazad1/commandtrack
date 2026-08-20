@@ -1,0 +1,90 @@
+{
+  "name": "Activity",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Activity name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Activity details"
+    },
+    "activity_type": {
+      "type": "string",
+      "enum": [
+        "training_module",
+        "roleplay",
+        "manager_checkin",
+        "call_agenda_upload",
+        "microlearning_video"
+      ],
+      "description": "Type of activity"
+    },
+    "xp_value": {
+      "type": "number",
+      "description": "XP points awarded for completion",
+      "default": 100
+    },
+    "video_url": {
+      "type": "string",
+      "description": "Video file URL for microlearning videos"
+    },
+    "scoring_criteria": {
+      "type": "string",
+      "description": "AI scoring criteria for uploads"
+    },
+    "order": {
+      "type": "number",
+      "description": "Display order",
+      "default": 0
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "Whether activity is currently active",
+      "default": true
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When activity becomes available"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When activity expires"
+    },
+    "path_id": {
+      "type": "string",
+      "description": "Activity path this belongs to"
+    },
+    "path_order": {
+      "type": "number",
+      "description": "Order within the path",
+      "default": 0
+    }
+  },
+  "required": [
+    "title",
+    "activity_type",
+    "xp_value"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "UserBadge",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "User who earned the badge"
+    },
+    "badge_id": {
+      "type": "string",
+      "description": "Reference to Badge"
+    },
+    "earned_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When badge was earned"
+    }
+  },
+  "required": [
+    "user_email",
+    "badge_id"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "Team",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Team name"
+    },
+    "department_id": {
+      "type": "string",
+      "description": "Reference to Department"
+    },
+    "lead_email": {
+      "type": "string",
+      "description": "Email of team lead"
+    },
+    "description": {
+      "type": "string",
+      "description": "Team description"
+    }
+  },
+  "required": [
+    "name",
+    "department_id"
+  ]
+}
